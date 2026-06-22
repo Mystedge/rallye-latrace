@@ -7,6 +7,7 @@ import { jourEffectif, getParam } from './params.js';
 import { participant } from './routes/participant.js';
 import { admin } from './routes/admin.js';
 import { executerSeed, synchroniserEmojis, synchroniserMedia, migrerBonusDepuisTitre } from './seed.js';
+import { snapshotBase } from '../scripts/backup.js';
 
 // Seed automatique au tout premier démarrage si la base est vide
 // (permet un déploiement via panel, sans aucune commande à taper).
@@ -27,6 +28,11 @@ if (nEmojis > 0) console.log(`Émojis des défis synchronisés : ${nEmojis} mis 
 // Synchronise le média attendu (photo/vidéo) depuis defis.json (préserve les choix admin).
 const nMedia = synchroniserMedia();
 if (nMedia > 0) console.log(`Média des défis synchronisé : ${nMedia} mis à jour.`);
+
+// Snapshots réguliers de la base (WAL-safe, dans /data/backup) — embarqués hors-VPS par rclone.
+const BACKUP_INTERVAL_MS = 15 * 60 * 1000;
+snapshotBase().catch((e) => console.error('Snapshot initial échoué :', e.message));
+setInterval(() => snapshotBase().catch((e) => console.error('Snapshot périodique échoué :', e.message)), BACKUP_INTERVAL_MS);
 
 const app = express();
 

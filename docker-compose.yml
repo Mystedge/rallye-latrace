@@ -22,5 +22,25 @@ services:
       - "traefik.http.routers.rallye.tls.certresolver=letsencrypt"
       - "traefik.http.services.rallye.loadbalancer.server.port=3000"
 
+  # Sauvegarde hors-VPS : pousse photos + vidéos + snapshots de base vers Google Drive.
+  # Tout se configure par variables d'environnement (rien à exposer, pas de route Traefik).
+  # Désactivé tant que RCLONE_DRIVE_TOKEN n'est pas renseigné dans l'interface Hostinger.
+  rclone:
+    image: rclone/rclone:latest
+    restart: unless-stopped
+    depends_on:
+      - app
+    volumes:
+      - rallye-data:/data:ro          # lecture seule : ne fait que lire pour envoyer
+    environment:
+      - RCLONE_CONFIG_DRIVE_TYPE=drive
+      - RCLONE_CONFIG_DRIVE_SCOPE=drive
+      - RCLONE_CONFIG_DRIVE_TOKEN=${RCLONE_DRIVE_TOKEN:-}
+      - DOSSIER=${RCLONE_DRIVE_DOSSIER:-latrace-backup}
+      - INTERVALLE=${RCLONE_INTERVALLE:-900}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - 'if [ -z "$$RCLONE_CONFIG_DRIVE_TOKEN" ]; then echo "[rclone] RCLONE_DRIVE_TOKEN absent : sauvegarde Drive inactive (l app tourne normalement)."; while true; do sleep 3600; done; fi; while true; do rclone copy /data/uploads "drive:$$DOSSIER/uploads" --transfers 4 --checkers 8 --drive-use-trash=false; rclone copy /data/backup "drive:$$DOSSIER/backup" --drive-use-trash=false; echo "[rclone] cycle $$(date -u) OK"; sleep "$$INTERVALLE"; done'
+
 volumes:
   rallye-data:

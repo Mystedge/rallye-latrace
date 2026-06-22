@@ -25,15 +25,35 @@
 - Le [`docker-compose.yml`](../docker-compose.yml) contient déjà les **labels Traefik** câblés pour ce VPS :
   - réseau : **`latrace_default`** (réseau par défaut du projet — surtout **pas** de réseau custom),
   - entrypoint TLS : `websecure`, certresolver : `letsencrypt`, règle `Host(app.latrace.bike)`, port interne `3000`.
-- **Secrets** (dans l'interface Hostinger, jamais dans le dépôt) : `ADMIN_PASSWORD`, `SESSION_SECRET`, `ANTHROPIC_API_KEY` (optionnelle).
+- **Secrets** (dans l'interface Hostinger, jamais dans le dépôt) : `ADMIN_PASSWORD`, `SESSION_SECRET`, `ANTHROPIC_API_KEY` (optionnelle), `RCLONE_DRIVE_TOKEN` (sauvegarde Drive — cf. § Sauvegarde).
 - Construction de l'image : [`Dockerfile`](../Dockerfile) + [`.github/workflows/docker-publish.yml`](../.github/workflows/docker-publish.yml).
+
+## Sauvegarde
+
+Deux niveaux complémentaires :
+- **Snapshots de base, dans le volume** : l'app crée un instantané WAL-safe de la base dans `/data/backup` au démarrage puis toutes les 15 min (rotation : 24 derniers). Protège des fausses manips (restaurer une base saine). Ne protège **pas** d'une perte du VPS.
+- **Copie hors-VPS vers Google Drive** : le conteneur `rclone` du [`docker-compose.yml`](../docker-compose.yml) pousse `/data/uploads` (photos + vidéos) et `/data/backup` (snapshots) vers ton Drive toutes les 15 min (commande `rclone copy`, additif : ne supprime jamais côté Drive). C'est la vraie protection contre la perte du VPS.
+
+**Activer le Drive (une seule fois) :**
+1. Sur ton PC, obtiens un jeton Google pour rclone :
+   - installe rclone (Windows : `rclone.exe` depuis rclone.org/downloads), **ou** avec Docker : `docker run --rm -it rclone/rclone authorize "drive"` ;
+   - lance `rclone authorize "drive"` → le navigateur s'ouvre → connecte le compte Google voulu → autorise ;
+   - rclone affiche un **jeton JSON** (entre accolades) : copie-le entièrement.
+2. Hostinger → Gestionnaire Docker → projet `latrace` → variables d'environnement :
+   - `RCLONE_DRIVE_TOKEN` = le JSON copié ;
+   - (optionnel) `RCLONE_DRIVE_DOSSIER` = nom du dossier Drive cible (défaut `latrace-backup`), `RCLONE_INTERVALLE` = secondes entre deux synchros (défaut 900).
+3. **Redéployer**. Tant que `RCLONE_DRIVE_TOKEN` est vide, le conteneur rclone s'arrête proprement (sauvegarde Drive inactive, l'app tourne normalement).
+
+**Vérifier :** logs du conteneur `rclone` (Gestionnaire Docker) → lignes « cycle … OK » ; un dossier `latrace-backup/` apparaît dans le Drive (`uploads/` + `backup/`).
+
+**Restaurer :** récupérer depuis Drive le dernier `backup/rallye-*.db` → le remettre en `/data/rallye.db` ; et le dossier `uploads/` → `/data/uploads/`.
 
 ## À finaliser avant l'événement (27-28 juin)
 
 - [ ] Distribuer les **codes des binômes** (visibles dans `/admin → Binômes`, ou les Journaux du 1er boot).
 - [ ] Configurer les défis dans `/admin` : énigmes → mode **`auto`** (avec réponse attendue) ; photos → mode **`ia`** (+ renseigner `ANTHROPIC_API_KEY`).
 - [ ] Confirmer les points du défi **« Trouve ton cap » (J2)** — mis à 5 pts, non précisés dans le roadbook.
-- [ ] **Sauvegarde hors-VPS** : le volume est sur le VPS (point unique de défaillance) → prévoir une copie distante.
+- [ ] **Activer la sauvegarde Drive** : renseigner `RCLONE_DRIVE_TOKEN` dans Hostinger (le mécanisme rclone→Drive est déjà en place — cf. § Sauvegarde — il ne manque que le jeton Google).
 - [ ] **Test sur téléphone** : compression photo, file offline (couper le réseau), installation PWA.
 - [ ] **Dimanche matin** : basculer « Défis J2 ouverts » dans `/admin → Réglages`.
 
