@@ -31,6 +31,13 @@
   document.addEventListener('click', async (e) => {
     const li = e.target.closest('.sub');
     if (!li) return;
+    if (e.target.closest('.btn-suppr')) {
+      if (!confirm('Supprimer définitivement cette soumission ?')) return;
+      const r = await post(`/admin/api/soumissions/${li.dataset.id}/supprimer`);
+      if (r.ok) { li.remove(); majSel(); }
+      else alert('Suppression refusée (rallye verrouillé ?).');
+      return;
+    }
     if (e.target.classList.contains('btn-valider')) {
       const points = Number(li.querySelector('.points')?.value);
       const r = await post(`/admin/api/soumissions/${li.dataset.id}/valider`, { points });
@@ -49,6 +56,17 @@
   });
 
   document.addEventListener('change', (e) => { if (e.target.classList.contains('sel')) majSel(); });
+
+  const btnTout = document.getElementById('btn-tout-sel');
+  if (btnTout) {
+    btnTout.addEventListener('click', () => {
+      const boxes = [...document.querySelectorAll('.sub .sel:not(:disabled)')];
+      const toutCoche = boxes.length > 0 && boxes.every((c) => c.checked);
+      boxes.forEach((c) => { c.checked = !toutCoche; });
+      btnTout.textContent = toutCoche ? 'Tout sélectionner' : 'Tout désélectionner';
+      majSel();
+    });
+  }
 
   const btnLot = document.getElementById('btn-valider-lot');
   if (btnLot) {

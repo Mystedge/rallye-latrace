@@ -8,9 +8,12 @@
         <% ['auto', 'weekend', 'J1', 'J2'].forEach((v) => { %><option value="<%= v %>" <%= jour_courant === v ? 'selected' : '' %>><%= v %></option><% }) %>
       </select>
     </label>
-    <p class="muted">Jour effectif appliqué actuellement : <strong><%= jour_effectif %></strong></p>
+    <p class="muted">Choisit quels défis de parcours s'affichent dans l'onglet « Aujourd'hui » côté participant.
+      <strong>auto</strong> = déduit de la date (samedi 27 → J1, dimanche 28 → J2) ; les autres valeurs forcent un jour (utile pour tester).
+      Actuellement appliqué : <strong><%= jour_effectif %></strong>.</p>
 
-    <label class="switch"><input type="checkbox" name="j2_ouvert" value="1" <%= j2_ouvert === '1' ? 'checked' : '' %>> Défis <strong>J2</strong> ouverts (à activer le dimanche matin)</label>
+    <label class="switch"><input type="checkbox" name="j2_ouvert" value="1" <%= j2_ouvert === '1' ? 'checked' : '' %>> Défis <strong>J2</strong> (dimanche) ouverts</label>
+    <p class="muted">Rend accessibles les défis du dimanche. <strong>À cocher le dimanche matin.</strong> Tant que c'est décoché, les défis J2 restent masqués pour les participants, même si le jour courant est J2.</p>
 
     <label class="switch"><input type="checkbox" name="ia_activee" value="1" <%= ia_activee === '1' ? 'checked' : '' %>> Pré-qualification <strong>IA</strong> activée
       <% if (!cle_ia) { %><span class="erreur">— ⚠️ clé API non configurée (.env)</span><% } %>

@@ -12,6 +12,16 @@ const _soumissionsBinome = db.prepare('SELECT defi_id, statut, points_attribues 
 export const getBinomeByCode = (code) => _binomeByCode.get(code);
 export const getBinomeById   = (id) => _binomeById.get(id);
 export const listDefisOrdonnes = () => _defisOrdered.all();
+
+// Défis filtrés (gestion admin)
+export function listDefisFiltres({ disponibilite, type, mode_validation, bonus } = {}) {
+  let sql = 'SELECT * FROM defis WHERE 1=1'; const p = [];
+  if (disponibilite) { sql += ' AND disponibilite = ?'; p.push(disponibilite); }
+  if (type)          { sql += ' AND type = ?'; p.push(type); }
+  if (mode_validation) { sql += ' AND mode_validation = ?'; p.push(mode_validation); }
+  if (bonus === '1' || bonus === '0') { sql += ' AND bonus = ?'; p.push(Number(bonus)); }
+  return db.prepare(sql + ' ORDER BY ordre, id').all(...p);
+}
 export const getDefi = (id) => _defi.get(id);
 export const getSoumission = (binomeId, defiId) => _soumission.get(binomeId, defiId);
 
@@ -88,24 +98,37 @@ const _listTri = `
            CASE s.ia_verdict WHEN 'incertain' THEN 0 WHEN 'mauvais' THEN 1 WHEN 'erreur' THEN 2 WHEN 'bon' THEN 3 ELSE 4 END,
            s.updated_at DESC`;
 
-export function listSoumissions({ binome, defi, statut, verdict } = {}) {
-  let sql = _listBase; const p = [];
+function _filtreSoum({ binome, defi, statut, verdict }) {
+  let sql = ''; const p = [];
   if (binome)  { sql += ' AND s.binome_id = ?'; p.push(binome); }
   if (defi)    { sql += ' AND s.defi_id = ?';   p.push(defi); }
   if (statut)  { sql += ' AND s.statut = ?';    p.push(statut); }
   if (verdict) { sql += ' AND s.ia_verdict = ?'; p.push(verdict); }
-  return db.prepare(sql + _listTri).all(...p);
+  return { sql, p };
+}
+// Liste paginée si limit fourni ; sinon toutes les soumissions filtrées
+export function listSoumissions(f = {}) {
+  const { sql, p } = _filtreSoum(f);
+  let q = _listBase + sql + _listTri;
+  if (f.limit != null) { q += ' LIMIT ? OFFSET ?'; p.push(f.limit, f.offset || 0); }
+  return db.prepare(q).all(...p);
+}
+export function countSoumissions(f = {}) {
+  const { sql, p } = _filtreSoum(f);
+  return db.prepare('SELECT COUNT(*) AS n FROM soumissions s WHERE 1=1' + sql).get(...p).n;
 }
 
 const _valider = db.prepare(`UPDATE soumissions SET statut='valide', points_attribues=?, validation_auto=0, validated_at=datetime('now'), updated_at=datetime('now') WHERE id=?`);
 const _refuser = db.prepare(`UPDATE soumissions SET statut='refuse', points_attribues=NULL, validation_auto=0, validated_at=datetime('now'), updated_at=datetime('now') WHERE id=?`);
+const _supprimerSoumission = db.prepare('DELETE FROM soumissions WHERE id=?');
 export const validerSoumission = (id, points) => _valider.run(points, id);
 export const refuserSoumission = (id) => _refuser.run(id);
+export const supprimerSoumission = (id) => _supprimerSoumission.run(id);
 
 // ─────────── Admin : CRUD défis ───────────
-const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
-  VALUES (@titre,@description,@emoji,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
-const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,type=@type,disponibilite=@disponibilite,
+const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,bonus,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
+  VALUES (@titre,@description,@emoji,@bonus,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
+const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,bonus=@bonus,type=@type,disponibilite=@disponibilite,
   mode_validation=@mode_validation,critere_ia=@critere_ia,reponse_attendue=@reponse_attendue,points_max=@points_max,ordre=@ordre WHERE id=@id`);
 export const creerDefi = (d) => _creerDefi.run(d).lastInsertRowid;
 export const majDefi = (id, d) => _majDefi.run({ ...d, id });

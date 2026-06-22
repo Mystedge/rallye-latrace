@@ -18,9 +18,8 @@
   </header>
 
   <main class="page">
-    <% const estBonus = /^bonus\s*[—–-]\s*/i.test(defi.titre); const titreDefi = defi.titre.replace(/^bonus\s*[—–-]\s*/i, ''); %>
-    <% if (estBonus) { %><p class="ligne-bonus"><span class="tag-bonus">Défi bonus</span></p><% } %>
-    <h1 class="titre-defi"><% if (defi.emoji) { %><span class="titre-emoji"><%= defi.emoji %></span> <% } %><%= titreDefi %></h1>
+    <% if (defi.bonus) { %><p class="ligne-bonus"><span class="tag-bonus">Défi bonus</span></p><% } %>
+    <h1 class="titre-defi"><% if (defi.emoji) { %><span class="titre-emoji"><%= defi.emoji %></span> <% } %><%= defi.titre %></h1>
     <% if (defi.description) { %><p class="consigne"><%= defi.description %></p><% } %>
 
     <% if (soumission) { %>

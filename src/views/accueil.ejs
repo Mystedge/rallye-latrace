@@ -36,8 +36,6 @@
         return { cls: 'etat-soumis', pill: 'sp-soumis', txt: 'Envoyé' };
       }
       const countValide = (arr) => arr.filter((d) => etat[d.id] && etat[d.id].statut === 'valide').length;
-      const estBonus = (t) => /^bonus\s*[—–-]\s*/i.test(t);
-      const titreAffiche = (t) => t.replace(/^bonus\s*[—–-]\s*/i, '');
       const aJour = groupes.jour.length > 0;
       const aWeekend = groupes.weekend.length > 0;
     %>
@@ -55,13 +53,13 @@
       <section class="groupe" data-groupe="jour">
         <h2>Défis du jour (<%= jour %>)</h2>
         <ul class="defis">
-          <% groupes.jour.forEach((d) => { const m = metaDefi(etat[d.id], d); const bonus = estBonus(d.titre); %>
+          <% groupes.jour.forEach((d) => { const m = metaDefi(etat[d.id], d); const bonus = !!d.bonus; %>
             <li>
               <a class="defi <%= m.cls %> <%= bonus ? 'defi-bonus' : '' %>" href="/defi/<%= d.id %>">
                 <span class="defi-emoji"><%= d.emoji || '📍' %></span>
                 <span class="defi-corps">
                   <% if (bonus) { %><span class="tag-bonus">Bonus</span><% } %>
-                  <span class="defi-titre"><%= titreAffiche(d.titre) %></span>
+                  <span class="defi-titre"><%= d.titre %></span>
                 </span>
                 <% if (m.pill) { %><span class="statut-pill <%= m.pill %>"><%= m.txt %></span><% } else { %><span class="defi-meta"><%= m.txt %></span><% } %>
               </a>
@@ -75,13 +73,13 @@
       <section class="groupe" data-groupe="weekend">
         <h2>Défis week-end</h2>
         <ul class="defis">
-          <% groupes.weekend.forEach((d) => { const m = metaDefi(etat[d.id], d); const bonus = estBonus(d.titre); %>
+          <% groupes.weekend.forEach((d) => { const m = metaDefi(etat[d.id], d); const bonus = !!d.bonus; %>
             <li>
               <a class="defi <%= m.cls %> <%= bonus ? 'defi-bonus' : '' %>" href="/defi/<%= d.id %>">
                 <span class="defi-emoji"><%= d.emoji || '📍' %></span>
                 <span class="defi-corps">
                   <% if (bonus) { %><span class="tag-bonus">Bonus</span><% } %>
-                  <span class="defi-titre"><%= titreAffiche(d.titre) %></span>
+                  <span class="defi-titre"><%= d.titre %></span>
                 </span>
                 <% if (m.pill) { %><span class="statut-pill <%= m.pill %>"><%= m.txt %></span><% } else { %><span class="defi-meta"><%= m.txt %></span><% } %>
               </a>

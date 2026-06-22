@@ -1,7 +1,7 @@
-<%- include('_head', { titre: 'Revue' }) %>
+<%- include('_head', { titre: 'Soumissions' }) %>
 <%- include('_nav', { actif: 'revue' }) %>
 <main class="page-admin">
-  <h1>Revue des soumissions</h1>
+  <h1>Soumissions</h1>
   <% if (verrou) { %><p class="banniere">🔒 Rallye verrouillé (lecture seule). Déverrouille dans Réglages pour noter.</p><% } %>
 
   <form class="filtres" method="get" action="/admin/revue">
@@ -21,12 +21,16 @@
       <option value="">Tout verdict IA</option>
       <% ['non_evalue', 'bon', 'mauvais', 'incertain', 'erreur'].forEach((v) => { %><option value="<%= v %>" <%= filtres.verdict === v ? 'selected' : '' %>><%= v %></option><% }) %>
     </select>
+    <select name="taille" title="Soumissions par page">
+      <% pagination.tailles.forEach((t) => { %><option value="<%= t %>" <%= pagination.taille === t ? 'selected' : '' %>><%= t %>/page</option><% }) %>
+    </select>
     <button class="btn-mini" type="submit">Filtrer</button>
   </form>
 
   <div class="actions-lot">
+    <button id="btn-tout-sel" class="btn-mini btn-sel" type="button">Tout sélectionner</button>
     <button id="btn-valider-lot" class="btn-mini" type="button">✅ Valider la sélection (<span id="n-sel">0</span>)</button>
-    <span class="muted">Coche les « bon » haute confiance, puis valide en masse. Raccourcis : survole une carte, <kbd>V</kbd> valide, <kbd>R</kbd> refuse.</span>
+    <span class="muted">Coche puis valide en masse. Survole une carte : <kbd>V</kbd> valide, <kbd>R</kbd> refuse.</span>
   </div>
 
   <ul class="soumissions">
@@ -39,6 +43,11 @@
           <% if (s.mode_validation === 'ia') { %>
             <span class="badge v-<%= s.ia_verdict %>">IA&nbsp;: <%= s.ia_verdict %><%= s.ia_confiance != null ? ' ' + Math.round(s.ia_confiance * 100) + '%' : '' %></span>
           <% } %>
+          <button class="btn-suppr" type="button" aria-label="Supprimer la soumission" title="Supprimer" <%= verrou ? 'disabled' : '' %>>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+          </button>
         </div>
         <% if (s.photo_path) { %>
           <a href="/uploads/<%= s.photo_path %>" target="_blank" rel="noopener">
@@ -58,5 +67,13 @@
     <% }) %>
   </ul>
   <% if (!soumissions.length) { %><p class="muted">Aucune soumission pour ces filtres.</p><% } %>
+
+  <% if (pagination.total > 0) { %>
+    <nav class="pagination">
+      <% if (pagination.page > 1) { %><a class="btn-mini" href="?<%= pagination.qsBase %>&page=<%= pagination.page - 1 %>">← Précédent</a><% } else { %><span class="btn-mini disabled">← Précédent</span><% } %>
+      <span class="pagination-info">Page <%= pagination.page %> / <%= pagination.pages %> · <%= pagination.total %> soumission<%= pagination.total > 1 ? 's' : '' %></span>
+      <% if (pagination.page < pagination.pages) { %><a class="btn-mini" href="?<%= pagination.qsBase %>&page=<%= pagination.page + 1 %>">Suivant →</a><% } else { %><span class="btn-mini disabled">Suivant →</span><% } %>
+    </nav>
+  <% } %>
 </main>
 <%- include('_foot') %>

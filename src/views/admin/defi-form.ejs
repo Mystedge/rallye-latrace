@@ -22,6 +22,7 @@
         <% ['weekend', 'J1', 'J2'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.disponibilite === t ? 'selected' : '' %>><%= t %></option><% }) %>
       </select>
     </label>
+    <label class="switch"><input type="checkbox" name="bonus" value="1" <%= defi && defi.bonus ? 'checked' : '' %>> Défi <strong>bonus</strong> <span class="muted">(affiché en doré, secondaire)</span></label>
     <label>Mode de validation
       <select name="mode_validation">
         <% ['manuel', 'auto', 'ia'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.mode_validation === t ? 'selected' : '' %>><%= t %></option><% }) %>

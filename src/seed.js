@@ -34,8 +34,8 @@ const findBinome = db.prepare('SELECT id, code FROM binomes WHERE nom = ?');
 const insBinome = db.prepare('INSERT INTO binomes (nom, code) VALUES (?, ?)');
 const findDefi = db.prepare('SELECT id FROM defis WHERE titre = ?');
 const insDefi = db.prepare(`
-  INSERT INTO defis (titre, description, emoji, type, disponibilite, mode_validation, reponse_attendue, critere_ia, points_max, ordre)
-  VALUES (@titre, @description, @emoji, @type, @disponibilite, @mode_validation, @reponse_attendue, @critere_ia, @points_max, @ordre)
+  INSERT INTO defis (titre, description, emoji, bonus, type, disponibilite, mode_validation, reponse_attendue, critere_ia, points_max, ordre)
+  VALUES (@titre, @description, @emoji, @bonus, @type, @disponibilite, @mode_validation, @reponse_attendue, @critere_ia, @points_max, @ordre)
 `);
 
 function codeUnique() {
@@ -64,6 +64,7 @@ export function executerSeed() {
           titre: d.titre,
           description: d.description || '',
           emoji: d.emoji ?? null,
+          bonus: d.bonus ? 1 : 0,
           type: d.type || 'photo',
           disponibilite: d.disponibilite || 'weekend',
           mode_validation: d.mode_validation || 'manuel',
@@ -89,6 +90,23 @@ export function synchroniserEmojis() {
   db.transaction(() => {
     for (const d of DEFIS) {
       if (d.emoji) n += _backfillEmoji.run({ titre: d.titre, emoji: d.emoji }).changes;
+    }
+  })();
+  return n;
+}
+
+// Migration unique : le statut « bonus » devient un champ. On le déduit du préfixe
+// « Bonus — » des titres existants, qu'on retire au passage. Idempotent (rien à faire
+// une fois les titres nettoyés). Joué à chaque démarrage.
+const PREFIXE_BONUS = /^bonus\s*[—–-]\s*/i;
+const _rowsBonus = db.prepare("SELECT id, titre FROM defis WHERE titre LIKE 'Bonus%'");
+const _setBonus = db.prepare('UPDATE defis SET bonus = 1, titre = ? WHERE id = ?');
+export function migrerBonusDepuisTitre() {
+  let n = 0;
+  db.transaction(() => {
+    for (const r of _rowsBonus.all()) {
+      const m = PREFIXE_BONUS.exec(r.titre);
+      if (m) { _setBonus.run(r.titre.slice(m[0].length).trim(), r.id); n++; }
     }
   })();
   return n;

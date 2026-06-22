@@ -243,6 +243,18 @@ textarea { resize: vertical; }
 .btn-mini { font-family: inherit; font-size: .95rem; font-weight: 700; padding: 10px 16px; border: none; border-radius: 999px; background: var(--vert); color: #fff; cursor: pointer; text-decoration: none; display: inline-block; }
 .btn-mini:hover { background: var(--vert-fonce); }
 .actions-lot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.btn-sel { background: #eef1ef; color: var(--texte); }
+.btn-sel:hover { background: #e0e4e0; }
+
+/* Bouton suppression d'une soumission (icône poubelle) */
+.btn-suppr { margin-left: auto; background: none; border: none; color: var(--texte-doux); cursor: pointer; padding: 6px; border-radius: 8px; display: inline-flex; align-items: center; }
+.btn-suppr:hover { color: var(--corail); background: #fdeceb; }
+.btn-suppr:disabled { opacity: .4; cursor: default; }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 8px; flex-wrap: wrap; }
+.pagination-info { color: var(--texte-doux); font-size: .9rem; }
+.btn-mini.disabled { background: #eef1ef; color: var(--texte-doux); pointer-events: none; }
 
 .soumissions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
 .sub { background: var(--surface); border: 1px solid var(--bord); border-left: 6px solid var(--bord); border-radius: var(--rayon-sm); padding: 14px; }

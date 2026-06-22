@@ -1,13 +1,17 @@
 import { Router } from 'express';
+import { unlink } from 'node:fs/promises';
+import { join } from 'node:path';
 import { config } from '../config.js';
 import { getParam, setParam, jourEffectif } from '../params.js';
 import {
-  listSoumissions, getSoumissionById, validerSoumission, refuserSoumission,
-  listDefisOrdonnes, getDefi, creerDefi, majDefi, supprimerDefi,
+  listSoumissions, countSoumissions, getSoumissionById, validerSoumission, refuserSoumission, supprimerSoumission,
+  listDefisOrdonnes, listDefisFiltres, getDefi, creerDefi, majDefi, supprimerDefi,
   listBinomes, getBinomeById, creerBinome, majBinome, supprimerBinome, genererCodeUnique,
   classement,
 } from '../repo.js';
 import { reevaluer } from '../prequalif.js';
+
+const TAILLES_PAGE = [10, 25, 50, 100];
 
 export const admin = Router();
 
@@ -35,14 +39,23 @@ admin.get('/admin/revue', requireAdmin, (req, res) => {
     binome: req.query.binome || '', defi: req.query.defi || '',
     statut: req.query.statut || '', verdict: req.query.verdict || '',
   };
-  const soumissions = listSoumissions({
+  const f = {
     binome: filtres.binome ? Number(filtres.binome) : null,
     defi: filtres.defi ? Number(filtres.defi) : null,
     statut: filtres.statut || null,
     verdict: filtres.verdict || null,
-  });
+  };
+  const taille = TAILLES_PAGE.includes(Number(req.query.taille)) ? Number(req.query.taille) : 25;
+  const total = countSoumissions(f);
+  const pages = Math.max(1, Math.ceil(total / taille));
+  const page = Math.min(Math.max(1, Number(req.query.page) || 1), pages);
+  const soumissions = listSoumissions({ ...f, limit: taille, offset: (page - 1) * taille });
+  const qp = new URLSearchParams();
+  for (const k of ['binome', 'defi', 'statut', 'verdict']) if (filtres[k]) qp.set(k, filtres[k]);
+  qp.set('taille', String(taille));
   res.render('admin/revue', {
     soumissions, filtres, binomes: listBinomes(), defis: listDefisOrdonnes(), verrou: verrouille(),
+    pagination: { page, pages, taille, total, tailles: TAILLES_PAGE, qsBase: qp.toString() },
   });
 });
 
@@ -63,6 +76,17 @@ admin.post('/admin/api/soumissions/:id/refuser', requireAdmin, (req, res) => {
   if (!s) return res.status(404).json({ ok: false });
   refuserSoumission(s.id);
   res.json({ ok: true, statut: 'refuse' });
+});
+
+admin.post('/admin/api/soumissions/:id/supprimer', requireAdmin, (req, res) => {
+  if (verrouille()) return res.status(423).json({ ok: false, erreur: 'Rallye verrouillé.' });
+  const s = getSoumissionById(Number(req.params.id));
+  if (!s) return res.status(404).json({ ok: false });
+  supprimerSoumission(s.id);
+  for (const f of [s.photo_path, s.thumb_path]) {
+    if (f) unlink(join(config.uploadsDir, f)).catch(() => {});
+  }
+  res.json({ ok: true });
 });
 
 admin.post('/admin/api/soumissions/:id/reevaluer', requireAdmin, (req, res) => {
@@ -89,6 +113,7 @@ function defiDepuisBody(body) {
     titre: String(body.titre || '').trim(),
     description: String(body.description || ''),
     emoji: body.emoji ? String(body.emoji).trim() : null,
+    bonus: body.bonus ? 1 : 0,
     type: ['photo', 'texte', 'mixte'].includes(body.type) ? body.type : 'photo',
     disponibilite: ['weekend', 'J1', 'J2'].includes(body.disponibilite) ? body.disponibilite : 'weekend',
     mode_validation: ['manuel', 'auto', 'ia'].includes(body.mode_validation) ? body.mode_validation : 'manuel',
@@ -99,7 +124,13 @@ function defiDepuisBody(body) {
   };
 }
 
-admin.get('/admin/defis', requireAdmin, (req, res) => res.render('admin/defis', { defis: listDefisOrdonnes() }));
+admin.get('/admin/defis', requireAdmin, (req, res) => {
+  const filtres = {
+    disponibilite: req.query.disponibilite || '', type: req.query.type || '',
+    mode_validation: req.query.mode_validation || '', bonus: req.query.bonus || '',
+  };
+  res.render('admin/defis', { defis: listDefisFiltres(filtres), filtres });
+});
 admin.get('/admin/defis/nouveau', requireAdmin, (req, res) => res.render('admin/defi-form', { defi: null }));
 admin.get('/admin/defis/:id', requireAdmin, (req, res) => {
   const defi = getDefi(Number(req.params.id));

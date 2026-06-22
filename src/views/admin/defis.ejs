@@ -2,6 +2,28 @@
 <%- include('_nav', { actif: 'defis' }) %>
 <main class="page-admin">
   <h1>Défis <a class="btn-mini" href="/admin/defis/nouveau">+ Nouveau défi</a></h1>
+
+  <form class="filtres" method="get" action="/admin/defis">
+    <select name="disponibilite">
+      <option value="">Toute dispo</option>
+      <% ['weekend', 'J1', 'J2'].forEach((v) => { %><option value="<%= v %>" <%= filtres.disponibilite === v ? 'selected' : '' %>><%= v %></option><% }) %>
+    </select>
+    <select name="type">
+      <option value="">Tout type</option>
+      <% ['photo', 'texte', 'mixte'].forEach((v) => { %><option value="<%= v %>" <%= filtres.type === v ? 'selected' : '' %>><%= v %></option><% }) %>
+    </select>
+    <select name="mode_validation">
+      <option value="">Toute validation</option>
+      <% ['manuel', 'auto', 'ia'].forEach((v) => { %><option value="<%= v %>" <%= filtres.mode_validation === v ? 'selected' : '' %>><%= v %></option><% }) %>
+    </select>
+    <select name="bonus">
+      <option value="">Bonus & principaux</option>
+      <option value="1" <%= filtres.bonus === '1' ? 'selected' : '' %>>Bonus uniquement</option>
+      <option value="0" <%= filtres.bonus === '0' ? 'selected' : '' %>>Principaux uniquement</option>
+    </select>
+    <button class="btn-mini" type="submit">Filtrer</button>
+  </form>
+
   <table class="tbl">
     <thead>
       <tr><th>Ordre</th><th></th><th>Titre</th><th>Type</th><th>Dispo</th><th>Validation</th><th>Pts</th><th></th></tr>
@@ -11,7 +33,7 @@
         <tr>
           <td><%= d.ordre %></td>
           <td style="font-size:1.3rem"><%= d.emoji || '' %></td>
-          <td><%= d.titre %></td>
+          <td><%= d.titre %> <% if (d.bonus) { %><span class="tag-bonus">Bonus</span><% } %></td>
           <td><%= d.type %></td>
           <td><%= d.disponibilite %></td>
           <td><%= d.mode_validation %></td>
@@ -26,5 +48,6 @@
       <% }) %>
     </tbody>
   </table>
+  <% if (!defis.length) { %><p class="muted">Aucun défi pour ces filtres.</p><% } %>
 </main>
 <%- include('_foot') %>

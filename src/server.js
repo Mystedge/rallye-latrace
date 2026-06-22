@@ -6,7 +6,7 @@ import { db } from './db.js';
 import { jourEffectif, getParam } from './params.js';
 import { participant } from './routes/participant.js';
 import { admin } from './routes/admin.js';
-import { executerSeed, synchroniserEmojis } from './seed.js';
+import { executerSeed, synchroniserEmojis, migrerBonusDepuisTitre } from './seed.js';
 
 // Seed automatique au tout premier démarrage si la base est vide
 // (permet un déploiement via panel, sans aucune commande à taper).
@@ -15,6 +15,10 @@ if (db.prepare('SELECT COUNT(*) n FROM binomes').get().n === 0) {
   console.log('Base vide -> seed initial. Codes de connexion des binômes :');
   for (const b of binomes) console.log(`  ${b.code}  ->  ${b.nom}`);
 }
+
+// Migre le statut « bonus » du titre vers le champ dédié (idempotent).
+const nBonus = migrerBonusDepuisTitre();
+if (nBonus > 0) console.log(`Défis bonus migrés depuis le titre : ${nBonus}.`);
 
 // Synchronise les émojis des défis depuis defis.json (idempotent, préserve les éditions admin).
 const nEmojis = synchroniserEmojis();

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS defis (
   titre            TEXT NOT NULL,
   description      TEXT NOT NULL DEFAULT '',
   emoji            TEXT,
+  bonus            INTEGER NOT NULL DEFAULT 0,
   type             TEXT NOT NULL CHECK (type IN ('photo','texte','mixte')),
   disponibilite    TEXT NOT NULL CHECK (disponibilite IN ('weekend','J1','J2')),
   mode_validation  TEXT NOT NULL DEFAULT 'manuel' CHECK (mode_validation IN ('manuel','auto','ia')),
@@ -65,6 +66,9 @@ CREATE TABLE IF NOT EXISTS parametres (
 const colonnesDefis = db.prepare('PRAGMA table_info(defis)').all().map((c) => c.name);
 if (!colonnesDefis.includes('emoji')) {
   db.exec("ALTER TABLE defis ADD COLUMN emoji TEXT");
+}
+if (!colonnesDefis.includes('bonus')) {
+  db.exec("ALTER TABLE defis ADD COLUMN bonus INTEGER NOT NULL DEFAULT 0");
 }
 
 // Paramètres par défaut (insérés une seule fois)
