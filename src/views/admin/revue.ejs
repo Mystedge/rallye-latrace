@@ -40,6 +40,7 @@
           <input type="checkbox" class="sel" <%= verrou ? 'disabled' : '' %>>
           <strong><%= s.binome_nom %></strong> — <%= s.defi_titre %>
           <span class="badge b-<%= s.statut %>"><%= s.statut %></span>
+          <% if (s.texte && /whatsapp/i.test(s.texte)) { %><span class="badge badge-wa">📲 WhatsApp</span><% } %>
           <% if (s.mode_validation === 'ia') { %>
             <span class="badge v-<%= s.ia_verdict %>">IA&nbsp;: <%= s.ia_verdict %><%= s.ia_confiance != null ? ' ' + Math.round(s.ia_confiance * 100) + '%' : '' %></span>
           <% } %>

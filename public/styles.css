@@ -191,6 +191,13 @@ h2 { font-family: 'Lexend'; font-size: .8rem; font-weight: 700; color: var(--ver
 .sb-soumis { background: #fff7e0; color: #7a5b00; border: 1px solid var(--or); }
 .sb-refuse { background: #fdeceb; color: #b23b32; border: 1px solid var(--corail); }
 
+/* Filet WhatsApp pour les défis vidéo */
+.whatsapp-bloc { margin-top: 4px; padding: 13px 15px; background: #eafaf0; border: 1px solid #b6e6c9; border-radius: var(--rayon-sm); }
+.whatsapp-bloc p { margin: 0 0 10px; font-size: .95rem; color: var(--texte); }
+.btn-whatsapp { font-family: inherit; font-weight: 700; font-size: 1.02rem; padding: 13px 16px; border: none; border-radius: var(--rayon-sm); background: #25D366; color: #fff; cursor: pointer; width: 100%; min-height: 50px; }
+.btn-whatsapp:hover, .btn-whatsapp:active { background: #1da851; }
+.btn-whatsapp:disabled { opacity: .55; }
+
 /* ───────── Formulaires ───────── */
 .form { display: flex; flex-direction: column; gap: 14px; }
 label { font-weight: 600; }
@@ -283,6 +290,7 @@ button:disabled { opacity: .55; cursor: default; }
 .b-soumis, .v-incertain { background: var(--or); color: #5c4500; }
 .v-erreur { background: #e4e7e4; color: #555; }
 .v-non_evalue { background: #f0f2f0; color: var(--texte-doux); }
+.badge-wa { background: #25D366; color: #fff; }
 
 .tbl { width: 100%; border-collapse: collapse; }
 .tbl th, .tbl td { text-align: left; padding: 10px; border-bottom: 1px solid var(--bord); }

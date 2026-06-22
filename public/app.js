@@ -141,8 +141,8 @@
         const f = inputPhoto?.files?.[0];
         if (f) {
           if (media === 'video') {
-            if (f.size > 50 * 1024 * 1024) {
-              etat.textContent = '⚠️ Vidéo trop lourde (50 Mo max). Filme plus court.';
+            if (f.size > 150 * 1024 * 1024) {
+              etat.textContent = '⚠️ Vidéo trop lourde (150 Mo max, ≈ 1 min). Filme plus court, ou envoie-la par WhatsApp ci-dessous.';
               btn.disabled = false;
               return;
             }
@@ -188,6 +188,25 @@
         btn.disabled = false;
       }
     });
+
+    // Bouton « J'ai envoyé par WhatsApp » (défis vidéo) : crée une soumission à valider en admin.
+    const btnWa = document.getElementById('btn-whatsapp');
+    if (btnWa) {
+      btnWa.addEventListener('click', async () => {
+        btnWa.disabled = true;
+        const rec = { defiId, texte: 'Vidéo envoyée à Tristan par WhatsApp 📲', blob: null, ts: Date.now() };
+        await idbPut(rec);
+        etat.textContent = '⬆️ Envoi du signalement…';
+        try {
+          const r = await envoyer(rec);
+          if (r === 'ok') { await idbDelete(defiId); window.location.href = '/accueil'; return; }
+          if (r === 'abandon') { await idbDelete(defiId); etat.textContent = '⚠️ Refusé par le serveur.'; btnWa.disabled = false; return; }
+        } catch {
+          etat.textContent = '📶 Pas de réseau — ton signalement partira automatiquement.';
+          btnWa.disabled = false;
+        }
+      });
+    }
   }
 
   // ───────────────────────── Onglets accueil (Aujourd'hui / Week-end) ─────────────────────────

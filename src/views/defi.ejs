@@ -51,7 +51,7 @@
           <p class="muted">Choisis un nouveau fichier pour le remplacer.</p>
         <% } %>
         <input id="photo" name="photo" type="file" accept="<%= attendVideo ? 'video/*' : 'image/*' %>"<%= attendVideo ? ' capture' : '' %>>
-        <% if (attendVideo) { %><p class="muted">Filme court : environ 20 s, 50 Mo max.</p><% } %>
+        <% if (attendVideo) { %><p class="muted">Filme court : environ 1 min, 150 Mo max.</p><% } %>
         <% if (attendVideo) { %>
           <video id="apercu-nouveau" class="apercu" hidden controls></video>
         <% } else { %>
@@ -61,6 +61,13 @@
 
       <p id="etat-envoi" class="etat" role="status" aria-live="polite"></p>
       <button type="submit" class="btn" id="btn-envoyer">Envoyer</button>
+
+      <% if (defi.media === 'video') { %>
+        <div class="whatsapp-bloc">
+          <p>Souci pour envoyer la vidéo (réseau, fichier trop lourd) ? Envoie-la à <strong>Tristan&nbsp;— 06&nbsp;50&nbsp;23&nbsp;00&nbsp;26</strong> sur WhatsApp, puis signale-le ici.</p>
+          <button type="button" class="btn-whatsapp" id="btn-whatsapp">J'ai envoyé par WhatsApp</button>
+        </div>
+      <% } %>
     </form>
   </main>
 

@@ -11,7 +11,7 @@ import {
 import { traiterPhoto, stockerVideo } from '../images.js';
 import { enqueue } from '../prequalif.js';
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 60 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 160 * 1024 * 1024 } });
 // Enveloppe multer : transforme une erreur (fichier trop volumineux) en 413 propre
 // pour que le client abandonne l'envoi au lieu de boucler.
 function uploadPhoto(req, res, next) {
