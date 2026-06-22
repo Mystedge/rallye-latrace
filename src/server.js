@@ -6,6 +6,15 @@ import { db } from './db.js';
 import { jourEffectif, getParam } from './params.js';
 import { participant } from './routes/participant.js';
 import { admin } from './routes/admin.js';
+import { executerSeed } from './seed.js';
+
+// Seed automatique au tout premier démarrage si la base est vide
+// (permet un déploiement via panel, sans aucune commande à taper).
+if (db.prepare('SELECT COUNT(*) n FROM binomes').get().n === 0) {
+  const binomes = executerSeed();
+  console.log('Base vide -> seed initial. Codes de connexion des binômes :');
+  for (const b of binomes) console.log(`  ${b.code}  ->  ${b.nom}`);
+}
 
 const app = express();
 
