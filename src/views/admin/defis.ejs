@@ -26,15 +26,15 @@
 
   <table class="tbl">
     <thead>
-      <tr><th>Ordre</th><th></th><th>Titre</th><th>Type</th><th>Dispo</th><th>Validation</th><th>Pts</th><th></th></tr>
+      <tr><th>Ordre</th><th></th><th>Titre</th><th>Bonus</th><th>Dispo</th><th>Validation</th><th>Pts</th><th></th></tr>
     </thead>
     <tbody>
       <% defis.forEach((d) => { %>
-        <tr>
+        <tr class="<%= d.bonus ? 'row-bonus' : '' %>">
           <td><%= d.ordre %></td>
           <td style="font-size:1.3rem"><%= d.emoji || '' %></td>
-          <td><%= d.titre %> <% if (d.bonus) { %><span class="tag-bonus">Bonus</span><% } %></td>
-          <td><%= d.type %></td>
+          <td><%= d.titre %></td>
+          <td><% if (d.bonus) { %><span class="tag-bonus">Bonus</span><% } %></td>
           <td><%= d.disponibilite %></td>
           <td><%= d.mode_validation %></td>
           <td><%= d.points_max %></td>

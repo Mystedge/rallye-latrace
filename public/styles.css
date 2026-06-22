@@ -282,6 +282,7 @@ button:disabled { opacity: .55; cursor: default; }
 .tbl { width: 100%; border-collapse: collapse; }
 .tbl th, .tbl td { text-align: left; padding: 10px; border-bottom: 1px solid var(--bord); }
 .tbl th { color: var(--texte-doux); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+.tbl tr.row-bonus { background: #fffdf6; }
 .nowrap { white-space: nowrap; }
 .danger { color: var(--corail); }
 
