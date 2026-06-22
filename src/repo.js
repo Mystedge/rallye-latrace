@@ -27,9 +27,9 @@ export function listDefisFiltres({ disponibilite, type, mode_validation, bonus }
   return db.prepare(`${sql} ORDER BY ${_ORDRE_JOUR}, ordre, id`).all(...p);
 }
 
-// Prochain numéro d'ordre (pour appendre un nouveau défi à la fin de son jour)
-const _maxOrdre = db.prepare('SELECT COALESCE(MAX(ordre), 0) + 1 AS n FROM defis');
-export const prochainOrdre = () => _maxOrdre.get().n;
+// Prochain numéro d'ordre dans une catégorie (le jour), pour appendre un défi à la fin de son groupe
+const _maxOrdreJour = db.prepare('SELECT COALESCE(MAX(ordre), 0) + 1 AS n FROM defis WHERE disponibilite = ?');
+export const prochainOrdreJour = (dispo) => _maxOrdreJour.get(dispo).n;
 export const getDefi = (id) => _defi.get(id);
 export const getSoumission = (binomeId, defiId) => _soumission.get(binomeId, defiId);
 

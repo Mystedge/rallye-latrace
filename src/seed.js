@@ -109,6 +109,21 @@ export function synchroniserMedia() {
   return n;
 }
 
+// Renumérote l'ordre des défis par catégorie (1, 2, 3… par jour) au lieu d'un classement
+// global. À jouer UNE SEULE FOIS (sinon écraserait les ordres édités en admin) — voir le
+// garde-fou par paramètre dans server.js. Conserve l'ordre relatif existant.
+const _defisDuJour = db.prepare('SELECT id FROM defis WHERE disponibilite = ? ORDER BY ordre, id');
+const _setOrdre = db.prepare('UPDATE defis SET ordre = ? WHERE id = ?');
+export function renumeroterOrdreParJour() {
+  let n = 0;
+  db.transaction(() => {
+    for (const dispo of ['weekend', 'J1', 'J2']) {
+      _defisDuJour.all(dispo).forEach((r, i) => { _setOrdre.run(i + 1, r.id); n++; });
+    }
+  })();
+  return n;
+}
+
 // Migration unique : le statut « bonus » devient un champ. On le déduit du préfixe
 // « Bonus — » des titres existants, qu'on retire au passage. Idempotent (rien à faire
 // une fois les titres nettoyés). Joué à chaque démarrage.

@@ -79,6 +79,17 @@
     });
   }
 
+  // Recherche instantanée sur la liste des défis (admin) — insensible aux accents/casse.
+  const inputDefis = document.getElementById('recherche-defis');
+  if (inputDefis) {
+    const norm = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const lignes = [...document.querySelectorAll('.tbl tbody tr')].map((tr) => ({ tr, txt: norm(tr.textContent) }));
+    inputDefis.addEventListener('input', () => {
+      const q = norm(inputDefis.value.trim());
+      lignes.forEach((l) => { l.tr.hidden = q !== '' && !l.txt.includes(q); });
+    });
+  }
+
   // Raccourcis : V valide / R refuse la carte survolée
   document.addEventListener('keydown', (e) => {
     if (e.target.matches('input, textarea, select')) return;

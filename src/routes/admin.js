@@ -5,7 +5,7 @@ import { config } from '../config.js';
 import { getParam, setParam, jourEffectif } from '../params.js';
 import {
   listSoumissions, countSoumissions, getSoumissionById, validerSoumission, refuserSoumission, supprimerSoumission,
-  listDefisOrdonnes, listDefisFiltres, prochainOrdre, getDefi, creerDefi, majDefi, supprimerDefi,
+  listDefisOrdonnes, listDefisFiltres, prochainOrdreJour, getDefi, creerDefi, majDefi, supprimerDefi,
   listBinomes, getBinomeById, creerBinome, majBinome, supprimerBinome, genererCodeUnique,
   classement,
 } from '../repo.js';
@@ -35,9 +35,10 @@ admin.get('/admin', requireAdmin, (req, res) => res.redirect('/admin/revue'));
 
 // ── Revue ──
 admin.get('/admin/revue', requireAdmin, (req, res) => {
+  // Par défaut (aucun filtre dans l'URL, ex. clic sur « Soumissions ») : seulement les soumissions à juger.
   const filtres = {
     binome: req.query.binome || '', defi: req.query.defi || '',
-    statut: req.query.statut || '', verdict: req.query.verdict || '',
+    statut: req.query.statut === undefined ? 'soumis' : req.query.statut, verdict: req.query.verdict || '',
   };
   const f = {
     binome: filtres.binome ? Number(filtres.binome) : null,
@@ -51,7 +52,8 @@ admin.get('/admin/revue', requireAdmin, (req, res) => {
   const page = Math.min(Math.max(1, Number(req.query.page) || 1), pages);
   const soumissions = listSoumissions({ ...f, limit: taille, offset: (page - 1) * taille });
   const qp = new URLSearchParams();
-  for (const k of ['binome', 'defi', 'statut', 'verdict']) if (filtres[k]) qp.set(k, filtres[k]);
+  for (const k of ['binome', 'defi', 'verdict']) if (filtres[k]) qp.set(k, filtres[k]);
+  qp.set('statut', filtres.statut); // toujours présent pour conserver le choix en pagination (y compris « tout » = '')
   qp.set('taille', String(taille));
   res.render('admin/revue', {
     soumissions, filtres, binomes: listBinomes(), defis: listDefisOrdonnes(), verrou: verrouille(),
@@ -121,6 +123,7 @@ function defiDepuisBody(body) {
     critere_ia: body.critere_ia ? String(body.critere_ia) : null,
     reponse_attendue: body.reponse_attendue ? String(body.reponse_attendue) : null,
     points_max: Math.max(0, Number(body.points_max) || 0),
+    ordre: Number(body.ordre) || 0, // position dans la catégorie (le jour) ; 0 => auto à la création
   };
 }
 
@@ -137,8 +140,8 @@ admin.get('/admin/defis/:id', requireAdmin, (req, res) => {
   if (!defi) return res.redirect('/admin/defis');
   res.render('admin/defi-form', { defi });
 });
-admin.post('/admin/defis', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); if (d.titre) creerDefi({ ...d, ordre: prochainOrdre() }); res.redirect('/admin/defis'); });
-admin.post('/admin/defis/:id', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); const actuel = getDefi(Number(req.params.id)); if (d.titre && actuel) majDefi(actuel.id, { ...d, ordre: actuel.ordre }); res.redirect('/admin/defis'); });
+admin.post('/admin/defis', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); if (d.titre) creerDefi({ ...d, ordre: d.ordre || prochainOrdreJour(d.disponibilite) }); res.redirect('/admin/defis'); });
+admin.post('/admin/defis/:id', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); const actuel = getDefi(Number(req.params.id)); if (d.titre && actuel) majDefi(actuel.id, { ...d, ordre: d.ordre || actuel.ordre }); res.redirect('/admin/defis'); });
 admin.post('/admin/defis/:id/supprimer', requireAdmin, (req, res) => { supprimerDefi(Number(req.params.id)); res.redirect('/admin/defis'); });
 
 // ── CRUD binômes ──

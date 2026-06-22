@@ -48,6 +48,9 @@
     <label>Points max
       <input type="number" name="points_max" min="0" value="<%= defi ? defi.points_max : 10 %>">
     </label>
+    <label>Ordre dans le jour <span class="muted">(1, 2, 3… recommence à chaque catégorie ; laisser vide = à la fin)</span>
+      <input type="number" name="ordre" min="1" value="<%= defi && defi.ordre ? defi.ordre : '' %>">
+    </label>
     <div class="form-row">
       <button class="btn" type="submit">Enregistrer</button>
       <a class="lien" href="/admin/defis">Annuler</a>

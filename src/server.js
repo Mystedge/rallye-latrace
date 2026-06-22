@@ -3,10 +3,10 @@ import cookieSession from 'cookie-session';
 import { join } from 'node:path';
 import { config } from './config.js';
 import { db } from './db.js';
-import { jourEffectif, getParam } from './params.js';
+import { jourEffectif, getParam, setParam } from './params.js';
 import { participant } from './routes/participant.js';
 import { admin } from './routes/admin.js';
-import { executerSeed, synchroniserEmojis, synchroniserMedia, migrerBonusDepuisTitre } from './seed.js';
+import { executerSeed, synchroniserEmojis, synchroniserMedia, migrerBonusDepuisTitre, renumeroterOrdreParJour } from './seed.js';
 import { snapshotBase } from '../scripts/backup.js';
 
 // Seed automatique au tout premier démarrage si la base est vide
@@ -28,6 +28,14 @@ if (nEmojis > 0) console.log(`Émojis des défis synchronisés : ${nEmojis} mis 
 // Synchronise le média attendu (photo/vidéo) depuis defis.json (préserve les choix admin).
 const nMedia = synchroniserMedia();
 if (nMedia > 0) console.log(`Média des défis synchronisé : ${nMedia} mis à jour.`);
+
+// Migration unique : ordre des défis renuméroté par catégorie (1..N par jour) au lieu d'un
+// classement global. Joué une seule fois (sinon écraserait les ordres édités ensuite en admin).
+if (getParam('ordre_par_jour') !== '1') {
+  const n = renumeroterOrdreParJour();
+  setParam('ordre_par_jour', '1');
+  console.log(`Ordre des défis renuméroté par catégorie : ${n}.`);
+}
 
 // Snapshots réguliers de la base (WAL-safe, dans /data/backup) — embarqués hors-VPS par rclone.
 const BACKUP_INTERVAL_MS = 15 * 60 * 1000;
