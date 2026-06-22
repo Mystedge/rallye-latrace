@@ -1,6 +1,8 @@
 /* Service worker minimal : met en cache la coquille statique (pour rouvrir l'app hors-ligne).
-   Ne touche JAMAIS aux API, à l'admin ni aux photos — la résilience des données passe par IndexedDB. */
-const CACHE = 'rallye-v1';
+   Ne touche JAMAIS aux API, à l'admin ni aux photos — la résilience des données passe par IndexedDB.
+   Stratégie coquille : stale-while-revalidate → affichage instantané + mise à jour auto au chargement suivant
+   (indispensable pour que les correctifs CSS/JS arrivent sans avoir à vider le cache à la main). */
+const CACHE = 'rallye-v2';
 const SHELL = [
   '/styles.css',
   '/app.js',
@@ -28,8 +30,17 @@ self.addEventListener('fetch', (e) => {
   if (url.origin !== location.origin) return;
   // On ne sert jamais depuis le cache les données dynamiques
   if (url.pathname.startsWith('/api') || url.pathname.startsWith('/admin') || url.pathname.startsWith('/uploads')) return;
-  // Coquille statique : cache d'abord, réseau en secours
+  // Coquille statique : on renvoie le cache tout de suite et on rafraîchit en arrière-plan.
   if (SHELL.includes(url.pathname)) {
-    e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
+    e.respondWith(
+      caches.open(CACHE).then((cache) =>
+        cache.match(e.request).then((cached) => {
+          const reseau = fetch(e.request)
+            .then((resp) => { if (resp && resp.ok) cache.put(e.request, resp.clone()); return resp; })
+            .catch(() => cached);
+          return cached || reseau;
+        }),
+      ),
+    );
   }
 });
