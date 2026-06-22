@@ -12,6 +12,8 @@ photos lourdes **HEIC** compressées dans le navigateur, interface **gros bouton
 
 ---
 
+> 🛠️ **Pour maintenir ou faire évoluer le projet** (notamment dans une autre session) : lis d'abord **[docs/MAINTENANCE.md](docs/MAINTENANCE.md)** — état de production, cycle de mise à jour, tâches en attente, pièges connus.
+
 ## Prérequis
 
 - **Node.js ≥ 20** (testé sur Node 25).
@@ -125,22 +127,17 @@ pm2 start rallye-latrace                      # ou: systemctl start rallye
 
 ## Déploiement (VPS)
 
-### Avec Docker (recommandé — VPS Hostinger)
+### En production — VPS Hostinger « Docker and Traefik » (méthode utilisée)
 
-GitHub + Docker. Les données (base SQLite, photos) vivent dans un **volume** → conservées à chaque mise à jour.
+L'app tourne déjà en ligne sur **https://app.latrace.bike**. Détails complets et exploitation : **[docs/MAINTENANCE.md](docs/MAINTENANCE.md)**. En résumé :
 
-1. **DNS** : enregistrement **A `app.latrace.bike` → IP du VPS**, ports 80 + 443 ouverts.
-2. **Sur le VPS** :
-   ```bash
-   git clone <URL-du-repo> /opt/rallye && cd /opt/rallye
-   cp .env.example .env        # éditer : ADMIN_PASSWORD, SESSION_SECRET, ANTHROPIC_API_KEY
-   docker compose up -d --build
-   docker compose exec app npm run seed     # une seule fois : binômes + défis
-   ```
-3. **Mise à jour** : `git pull && docker compose up -d --build` (ou `sh deploy/update.sh`).
-4. **Sauvegarde** : `docker compose exec app npm run backup` (cron horaire côté hôte) ; le volume contient `/data/backup` à synchroniser hors-VPS avant J0.
+- L'image est **construite automatiquement** par GitHub Actions à chaque push → `ghcr.io/mystedge/rallye-latrace:latest` (paquet GHCR public).
+- Déploiement via le **Gestionnaire Docker** de Hostinger : coller l'URL du `docker-compose.yml`, ou l'onglet « Éditeur .yaml ». Le compose contient déjà les **labels Traefik** (réseau `latrace_default`, entrypoint `websecure`, certresolver `letsencrypt`, `Host(app.latrace.bike)`, port 3000).
+- **Secrets** dans l'interface Hostinger : `ADMIN_PASSWORD`, `SESSION_SECRET`, `ANTHROPIC_API_KEY`.
+- **Données** dans le volume `rallye-data:/data` (persistantes). **DNS** : `A app.latrace.bike → IP VPS`.
+- **Mise à jour** : `git push` → **Redéployer** dans Hostinger (auto-seed au 1er boot).
 
-> **Traefik** : le `docker-compose.yml` est déjà configuré avec les labels Traefik (pas de service Caddy). Avant le `up`, adapte dans le compose les 3 valeurs marquées `<ADAPTER>` : le **réseau externe** de Traefik (`docker network ls`), l'**entrypoint** TLS (souvent `websecure`) et le nom du **certresolver** (souvent `letsencrypt`). L'upload est borné par l'app (multer 8 Mo), pas besoin de limite côté Traefik.
+> Le `docker-compose.yml` utilise une **image pré-construite** (ghcr.io) plutôt que `build:` — c'est ce qui permet le déploiement par URL via l'interface Hostinger.
 
 ### Sans Docker (pm2)
 
