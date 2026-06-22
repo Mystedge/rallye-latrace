@@ -1,0 +1,25 @@
+<%- include('_head', { titre: 'Points en direct' }) %>
+<%- include('_nav', { actif: 'defis' }) %>
+<main class="page-admin">
+  <h1><% if (defi.emoji) { %><%= defi.emoji %> <% } %><%= defi.titre %> — points en direct</h1>
+  <p class="muted">Épreuve attribuée à la main. Saisis les points par binôme (laisse vide pour ne rien attribuer). Le défi apparaît dans la liste d'un binôme une fois ses points enregistrés.</p>
+  <% if (verrou) { %><p class="banniere">🔒 Rallye verrouillé — déverrouille dans Réglages pour modifier.</p><% } %>
+
+  <form class="form" method="post" action="/admin/defis/<%= defi.id %>/points">
+    <ul class="binomes">
+      <% binomes.forEach((b) => { %>
+        <li class="bcard">
+          <span><strong><%= b.nom %></strong></span>
+          <label class="form-inline">Points
+            <input type="number" name="pts_<%= b.id %>" min="0" inputmode="numeric" value="<%= points[b.id] != null ? points[b.id] : '' %>" style="width:100px" <%= verrou ? 'disabled' : '' %>>
+          </label>
+        </li>
+      <% }) %>
+    </ul>
+    <div class="form-row">
+      <button class="btn" type="submit" <%= verrou ? 'disabled' : '' %>>Enregistrer les points</button>
+      <a class="lien" href="/admin/defis/<%= defi.id %>">Retour au défi</a>
+    </div>
+  </form>
+</main>
+<%- include('_foot') %>

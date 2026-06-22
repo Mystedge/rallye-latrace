@@ -21,6 +21,7 @@
     <% if (defi.bonus) { %><p class="ligne-bonus"><span class="tag-bonus">Défi bonus</span></p><% } %>
     <h1 class="titre-defi"><% if (defi.emoji) { %><span class="titre-emoji"><%= defi.emoji %></span> <% } %><%= defi.titre %></h1>
     <% if (defi.description) { %><p class="consigne"><%= defi.description %></p><% } %>
+    <% if (defi.image_consigne) { %><img class="consigne-img" src="/uploads/<%= defi.image_consigne %>" alt="illustration du défi" loading="lazy"><% } %>
 
     <% if (soumission) { %>
       <% if (soumission.statut === 'valide') { %>
@@ -32,6 +33,9 @@
       <% } %>
     <% } %>
 
+    <% if (defi.live) { %>
+      <p class="statut-bloc sb-soumis">⚡ Épreuve en direct — les points sont attribués par l'organisation, rien à envoyer ici.</p>
+    <% } else { %>
     <form id="form-defi" class="form" data-defi-id="<%= defi.id %>" data-type="<%= defi.type %>" data-media="<%= defi.media || 'photo' %>">
       <% if (defi.type === 'texte' || defi.type === 'mixte') { %>
         <label for="texte">Ta réponse</label>
@@ -69,6 +73,7 @@
         </div>
       <% } %>
     </form>
+    <% } %>
   </main>
 
   <script src="/vendor/browser-image-compression.js"></script>

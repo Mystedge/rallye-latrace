@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { config } from '../config.js';
@@ -6,12 +7,20 @@ import { getParam, setParam, jourEffectif } from '../params.js';
 import {
   listSoumissions, countSoumissions, getSoumissionById, validerSoumission, refuserSoumission, supprimerSoumission,
   listDefisOrdonnes, listDefisFiltres, prochainOrdreJour, getDefi, creerDefi, majDefi, supprimerDefi,
+  attribuerPointsLive, retirerSoumissionBinome, pointsParBinome,
   listBinomes, getBinomeById, creerBinome, majBinome, supprimerBinome, genererCodeUnique,
   classement,
 } from '../repo.js';
+import { traiterImage } from '../images.js';
 import { reevaluer } from '../prequalif.js';
 
 const TAILLES_PAGE = [10, 25, 50, 100];
+
+// Upload de l'image de consigne (défi). Tolérant : si erreur (trop lourde), on ignore le fichier.
+const uploadImage = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+function uploadConsigne(req, res, next) {
+  uploadImage.single('image_consigne')(req, res, () => next());
+}
 
 export const admin = Router();
 
@@ -117,6 +126,7 @@ function defiDepuisBody(body) {
     emoji: body.emoji ? String(body.emoji).trim() : null,
     bonus: body.bonus ? 1 : 0,
     media: body.media === 'video' ? 'video' : 'photo',
+    live: body.live ? 1 : 0,
     type: ['photo', 'texte', 'mixte'].includes(body.type) ? body.type : 'photo',
     disponibilite: ['weekend', 'J1', 'J2'].includes(body.disponibilite) ? body.disponibilite : 'weekend',
     mode_validation: ['manuel', 'auto', 'ia'].includes(body.mode_validation) ? body.mode_validation : 'manuel',
@@ -140,9 +150,49 @@ admin.get('/admin/defis/:id', requireAdmin, (req, res) => {
   if (!defi) return res.redirect('/admin/defis');
   res.render('admin/defi-form', { defi });
 });
-admin.post('/admin/defis', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); if (d.titre) creerDefi({ ...d, ordre: d.ordre || prochainOrdreJour(d.disponibilite) }); res.redirect('/admin/defis'); });
-admin.post('/admin/defis/:id', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); const actuel = getDefi(Number(req.params.id)); if (d.titre && actuel) majDefi(actuel.id, { ...d, ordre: d.ordre || actuel.ordre }); res.redirect('/admin/defis'); });
+admin.post('/admin/defis', requireAdmin, uploadConsigne, async (req, res) => {
+  const d = defiDepuisBody(req.body);
+  if (!d.titre) return res.redirect('/admin/defis');
+  let image_consigne = null;
+  if (req.file?.buffer?.length) image_consigne = await traiterImage(req.file.buffer);
+  creerDefi({ ...d, image_consigne, ordre: d.ordre || prochainOrdreJour(d.disponibilite) });
+  res.redirect('/admin/defis');
+});
+admin.post('/admin/defis/:id', requireAdmin, uploadConsigne, async (req, res) => {
+  const d = defiDepuisBody(req.body);
+  const actuel = getDefi(Number(req.params.id));
+  if (!d.titre || !actuel) return res.redirect('/admin/defis');
+  let image_consigne = actuel.image_consigne;
+  if (req.body.supprimer_image && image_consigne) {
+    unlink(join(config.uploadsDir, image_consigne)).catch(() => {});
+    image_consigne = null;
+  }
+  if (req.file?.buffer?.length) {
+    if (image_consigne) unlink(join(config.uploadsDir, image_consigne)).catch(() => {});
+    image_consigne = await traiterImage(req.file.buffer);
+  }
+  majDefi(actuel.id, { ...d, image_consigne, ordre: d.ordre || actuel.ordre });
+  res.redirect('/admin/defis');
+});
 admin.post('/admin/defis/:id/supprimer', requireAdmin, (req, res) => { supprimerDefi(Number(req.params.id)); res.redirect('/admin/defis'); });
+
+// ── Épreuves en direct : attribution manuelle de points par binôme (défis « live » uniquement) ──
+admin.get('/admin/defis/:id/points', requireAdmin, (req, res) => {
+  const defi = getDefi(Number(req.params.id));
+  if (!defi || !defi.live) return res.redirect('/admin/defis');
+  res.render('admin/defi-points', { defi, binomes: listBinomes(), points: pointsParBinome(defi.id), verrou: verrouille() });
+});
+admin.post('/admin/defis/:id/points', requireAdmin, (req, res) => {
+  const defi = getDefi(Number(req.params.id));
+  if (!defi || !defi.live) return res.redirect('/admin/defis');
+  if (verrouille()) return res.redirect(`/admin/defis/${defi.id}/points`);
+  for (const b of listBinomes()) {
+    const raw = req.body['pts_' + b.id];
+    if (raw === undefined || String(raw).trim() === '') retirerSoumissionBinome(b.id, defi.id);
+    else attribuerPointsLive(b.id, defi.id, Math.max(0, Math.round(Number(raw) || 0)));
+  }
+  res.redirect(`/admin/defis/${defi.id}/points`);
+});
 
 // ── CRUD binômes ──
 admin.get('/admin/binomes', requireAdmin, (req, res) =>

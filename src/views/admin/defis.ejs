@@ -35,12 +35,13 @@
         <tr class="<%= d.bonus ? 'row-bonus' : '' %>">
           <td><%= d.ordre %></td>
           <td style="font-size:1.3rem"><%= d.emoji || '' %></td>
-          <td><%= d.titre %></td>
+          <td><%= d.titre %> <% if (d.live) { %><span class="tag-live">En direct</span><% } %></td>
           <td><% if (d.bonus) { %><span class="tag-bonus">Bonus</span><% } %></td>
           <td><%= d.disponibilite %></td>
-          <td><%= d.mode_validation %></td>
+          <td><%= d.live ? '—' : d.mode_validation %></td>
           <td><%= d.points_max %></td>
           <td class="nowrap">
+            <% if (d.live) { %><a class="lien" href="/admin/defis/<%= d.id %>/points">Points</a><% } %>
             <a class="lien" href="/admin/defis/<%= d.id %>">Modifier</a>
             <form method="post" action="/admin/defis/<%= d.id %>/supprimer" onsubmit="return confirm('Supprimer ce défi et ses soumissions ?')" style="display:inline">
               <button class="lien danger" type="submit">Suppr.</button>

@@ -148,6 +148,7 @@ h2 { font-family: 'Lexend'; font-size: .8rem; font-weight: 700; color: var(--ver
 
 /* Défis bonus : accent doré + étiquette, pour les distinguer des défis principaux */
 .tag-bonus { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #8a6a00; background: #fbecbf; padding: 2px 9px; border-radius: 999px; line-height: 1.5; }
+.tag-live { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #fff; background: #378add; padding: 2px 8px; border-radius: 999px; }
 .defi-bonus { background: #fffdf6; border-left-color: #efd283; }
 .defi-bonus .defi-emoji { background: #fbecbf; }
 
@@ -222,6 +223,7 @@ textarea { resize: vertical; }
 
 .titre-defi { font-size: 1.6rem; margin: 8px 4px; color: var(--vert); }
 .consigne { color: var(--texte-doux); margin: 0 4px 14px; }
+.consigne-img { max-width: 100%; border-radius: var(--rayon-sm); border: 1px solid var(--bord); margin: 0 0 14px; display: block; }
 .apercu { max-width: 100%; border-radius: var(--rayon-sm); border: 1px solid var(--bord); display: block; }
 
 .btn {

@@ -4,6 +4,16 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { config } from './config.js';
 
+// Image de consigne (illustration d'un défi) : une seule image redimensionnée.
+export async function traiterImage(buffer) {
+  const nom = `${randomUUID()}.jpg`;
+  await sharp(buffer, { failOn: 'none' }).rotate()
+    .resize({ width: 1280, height: 1280, fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 82 })
+    .toFile(join(config.uploadsDir, nom));
+  return nom;
+}
+
 // Vidéo : stockée telle quelle (pas de ré-encodage serveur). Extension dérivée du
 // type MIME, restreinte à une liste sûre. Pas de miniature.
 const EXT_VIDEO = { 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm', 'video/x-m4v': 'm4v', 'video/3gpp': '3gp' };

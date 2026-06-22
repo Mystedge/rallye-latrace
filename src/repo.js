@@ -133,10 +133,29 @@ export const validerSoumission = (id, points) => _valider.run(points, id);
 export const refuserSoumission = (id) => _refuser.run(id);
 export const supprimerSoumission = (id) => _supprimerSoumission.run(id);
 
+// ─────────── Épreuves en direct : attribution manuelle de points ───────────
+// Crée/met à jour une soumission VALIDÉE (compte directement dans le classement).
+const _upsertLive = db.prepare(`
+  INSERT INTO soumissions (binome_id, defi_id, statut, points_attribues, validation_auto, validated_at, submitted_at, updated_at)
+  VALUES (@binomeId, @defiId, 'valide', @points, 0, datetime('now'), datetime('now'), datetime('now'))
+  ON CONFLICT(binome_id, defi_id) DO UPDATE SET
+    statut='valide', points_attribues=@points, validation_auto=0, validated_at=datetime('now'), updated_at=datetime('now')
+`);
+export const attribuerPointsLive = (binomeId, defiId, points) => _upsertLive.run({ binomeId, defiId, points });
+const _delSoumBinome = db.prepare('DELETE FROM soumissions WHERE binome_id = ? AND defi_id = ?');
+export const retirerSoumissionBinome = (binomeId, defiId) => _delSoumBinome.run(binomeId, defiId);
+// binomeId -> points attribués pour un défi (pré-remplissage de l'écran « Points en direct »)
+const _soumParDefi = db.prepare('SELECT binome_id, points_attribues FROM soumissions WHERE defi_id = ?');
+export function pointsParBinome(defiId) {
+  const m = Object.create(null);
+  for (const r of _soumParDefi.all(defiId)) m[r.binome_id] = r.points_attribues;
+  return m;
+}
+
 // ─────────── Admin : CRUD défis ───────────
-const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,bonus,media,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
-  VALUES (@titre,@description,@emoji,@bonus,@media,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
-const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,bonus=@bonus,media=@media,type=@type,disponibilite=@disponibilite,
+const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,bonus,media,live,image_consigne,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
+  VALUES (@titre,@description,@emoji,@bonus,@media,@live,@image_consigne,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
+const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,bonus=@bonus,media=@media,live=@live,image_consigne=@image_consigne,type=@type,disponibilite=@disponibilite,
   mode_validation=@mode_validation,critere_ia=@critere_ia,reponse_attendue=@reponse_attendue,points_max=@points_max,ordre=@ordre WHERE id=@id`);
 export const creerDefi = (d) => _creerDefi.run(d).lastInsertRowid;
 export const majDefi = (id, d) => _majDefi.run({ ...d, id });

@@ -55,7 +55,8 @@ participant.get('/accueil', requireBinome, (req, res) => {
   if (!binome) { req.session = null; return res.redirect('/'); }
   const etat = mapSoumissions(binome.id);
   const score = Object.values(etat).reduce((s, e) => s + (e.statut === 'valide' && e.points ? e.points : 0), 0);
-  const visibles = listDefisOrdonnes().filter(defiVisible);
+  // Défis « en direct » : masqués tant que l'orga n'a pas attribué de points à ce binôme.
+  const visibles = listDefisOrdonnes().filter((d) => (d.live ? !!etat[d.id] : defiVisible(d)));
   const groupes = {
     weekend: visibles.filter((d) => d.disponibilite === 'weekend'),
     jour: visibles.filter((d) => d.disponibilite !== 'weekend'),
@@ -66,8 +67,11 @@ participant.get('/accueil', requireBinome, (req, res) => {
 // Formulaire d'un défi (pré-rempli si déjà soumis)
 participant.get('/defi/:id', requireBinome, (req, res) => {
   const defi = getDefi(Number(req.params.id));
-  if (!defi || !defiVisible(defi)) return res.redirect('/accueil');
+  if (!defi) return res.redirect('/accueil');
   const soumission = getSoumission(req.session.binomeId, defi.id);
+  // Défi live : accessible seulement si l'orga a attribué des points à ce binôme.
+  const accessible = defi.live ? !!soumission : defiVisible(defi);
+  if (!accessible) return res.redirect('/accueil');
   res.render('defi', { defi, soumission });
 });
 
@@ -79,7 +83,7 @@ participant.post('/api/soumissions', requireBinome, uploadPhoto, async (req, res
     }
     const defiId = Number(req.body.defi_id);
     const defi = getDefi(defiId);
-    if (!defi || !defiVisible(defi)) {
+    if (!defi || !defiVisible(defi) || defi.live) {
       return res.status(400).json({ ok: false, erreur: 'Défi indisponible.' });
     }
 
