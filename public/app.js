@@ -260,7 +260,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('form-defi');
     if (form) wireDefi(form);
-    wireOnglets();
+    wireAccueil();
     majBanniere();
     sync();
   });
