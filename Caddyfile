@@ -1,0 +1,14 @@
+# Caddy — HTTPS automatique (Let's Encrypt) pour le Rallye La Trace.
+# Prérequis DNS : un enregistrement A  app.latrace.bike -> IP du VPS, ports 80 + 443 ouverts.
+# Utilisé par le service "caddy" du docker-compose.yml (proxy vers le conteneur app).
+
+app.latrace.bike {
+    encode gzip
+
+    # Autoriser quelques Mo par upload photo (cohérent avec la limite Express/multer)
+    request_body {
+        max_size 10MB
+    }
+
+    reverse_proxy app:3000   # nom du service Docker (hors Docker : localhost:3000)
+}

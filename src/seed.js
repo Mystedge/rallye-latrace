@@ -1,0 +1,83 @@
+import { randomInt } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { db } from './db.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Code de connexion lisible et non devinable (sans I, O, 0, 1)
+const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const genCode = (n = 6) =>
+  Array.from({ length: n }, () => ALPHABET[randomInt(ALPHABET.length)]).join('');
+
+const BINOMES = [
+  'Eric & Christine/Chloé',
+  'Eric & Nathalie',
+  'Tanguy & Fanny',
+  'Fred & Yannick',
+  'Pascal & Virginie',
+  'Stephane & Christophe',
+  'Nico & Jean',
+  'Constance & Leo',
+];
+
+// Défis issus des roadbooks (week-end + J1 + J2). Source de vérité : src/data/defis.json
+const DEFIS = JSON.parse(readFileSync(join(__dirname, 'data', 'defis.json'), 'utf8'));
+
+const findBinome = db.prepare('SELECT id, code FROM binomes WHERE nom = ?');
+const insBinome = db.prepare('INSERT INTO binomes (nom, code) VALUES (?, ?)');
+
+function codeUnique() {
+  const utilises = new Set(db.prepare('SELECT code FROM binomes').all().map((r) => r.code));
+  let c;
+  do { c = genCode(); } while (utilises.has(c));
+  return c;
+}
+
+const findDefi = db.prepare('SELECT id FROM defis WHERE titre = ?');
+const insDefi = db.prepare(`
+  INSERT INTO defis (titre, description, type, disponibilite, mode_validation, reponse_attendue, critere_ia, points_max, ordre)
+  VALUES (@titre, @description, @type, @disponibilite, @mode_validation, @reponse_attendue, @critere_ia, @points_max, @ordre)
+`);
+
+const seed = db.transaction(() => {
+  const binomes = [];
+  for (const nom of BINOMES) {
+    let row = findBinome.get(nom);
+    if (!row) {
+      const code = codeUnique();
+      insBinome.run(nom, code);
+      row = { code };
+    }
+    binomes.push({ nom, code: row.code });
+  }
+
+  for (const d of DEFIS) {
+    if (!findDefi.get(d.titre)) {
+      insDefi.run({
+        titre: d.titre,
+        description: d.description || '',
+        type: d.type || 'photo',
+        disponibilite: d.disponibilite || 'weekend',
+        mode_validation: d.mode_validation || 'manuel',
+        reponse_attendue: d.reponse_attendue ?? null,
+        critere_ia: d.critere_ia ?? null,
+        points_max: d.points_max ?? 10,
+        ordre: d.ordre ?? 0,
+      });
+    }
+  }
+
+  return binomes;
+});
+
+const binomes = seed();
+const compte = (dispo) => db.prepare('SELECT COUNT(*) n FROM defis WHERE disponibilite = ?').get(dispo).n;
+
+console.log('— Seed Rallye La Trace 2026 —');
+console.log(`Binômes : ${db.prepare('SELECT COUNT(*) n FROM binomes').get().n}`);
+console.log(`Défis : week-end ${compte('weekend')} · J1 ${compte('J1')} · J2 ${compte('J2')} · total ${db.prepare('SELECT COUNT(*) n FROM defis').get().n}`);
+console.log('\nCodes de connexion des binômes :');
+for (const b of binomes) console.log(`  ${b.code}   →   ${b.nom}`);
+console.log('\n(Modes/réponses/critères à affiner dans l\'espace admin.)');

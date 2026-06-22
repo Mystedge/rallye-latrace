@@ -1,0 +1,45 @@
+<%- include('_head', { titre: defi ? 'Modifier un défi' : 'Nouveau défi' }) %>
+<%- include('_nav', { actif: 'defis' }) %>
+<main class="page-admin">
+  <h1><%= defi ? 'Modifier le défi' : 'Nouveau défi' %></h1>
+  <form class="form" method="post" action="<%= defi ? '/admin/defis/' + defi.id : '/admin/defis' %>">
+    <label>Titre
+      <input name="titre" required value="<%= defi ? defi.titre : '' %>">
+    </label>
+    <label>Consigne / description
+      <textarea name="description" rows="3"><%= defi ? defi.description : '' %></textarea>
+    </label>
+    <label>Type
+      <select name="type">
+        <% ['photo', 'texte', 'mixte'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.type === t ? 'selected' : '' %>><%= t %></option><% }) %>
+      </select>
+    </label>
+    <label>Disponibilité
+      <select name="disponibilite">
+        <% ['weekend', 'J1', 'J2'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.disponibilite === t ? 'selected' : '' %>><%= t %></option><% }) %>
+      </select>
+    </label>
+    <label>Mode de validation
+      <select name="mode_validation">
+        <% ['manuel', 'auto', 'ia'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.mode_validation === t ? 'selected' : '' %>><%= t %></option><% }) %>
+      </select>
+    </label>
+    <label>Réponse attendue <span class="muted">(mode auto)</span>
+      <input name="reponse_attendue" value="<%= defi && defi.reponse_attendue ? defi.reponse_attendue : '' %>">
+    </label>
+    <label>Critère IA <span class="muted">(mode ia)</span>
+      <textarea name="critere_ia" rows="2" placeholder="ex. Une borne kilométrique routière est visible sur la photo"><%= defi && defi.critere_ia ? defi.critere_ia : '' %></textarea>
+    </label>
+    <label>Points max
+      <input type="number" name="points_max" min="0" value="<%= defi ? defi.points_max : 10 %>">
+    </label>
+    <label>Ordre d'affichage
+      <input type="number" name="ordre" value="<%= defi ? defi.ordre : 0 %>">
+    </label>
+    <div class="form-row">
+      <button class="btn" type="submit">Enregistrer</button>
+      <a class="lien" href="/admin/defis">Annuler</a>
+    </div>
+  </form>
+</main>
+<%- include('_foot') %>

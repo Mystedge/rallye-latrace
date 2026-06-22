@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#34765e">
+  <title>Mes défis — Rallye La Trace</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icon-180.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="barre">
+    <strong class="barre-titre"><img class="barre-logo" src="/logo-latrace.svg" alt="La Trace"> <%= binome.nom %></strong>
+    <form method="post" action="/api/logout"><button class="lien" type="submit">Déconnexion</button></form>
+  </header>
+
+  <main class="page">
+    <div id="banniere-attente" class="banniere" hidden></div>
+
+    <% if (groupes.weekend.length) { %>
+      <h2>Défis week-end</h2>
+      <ul class="defis">
+        <% groupes.weekend.forEach((d) => { %>
+          <li>
+            <a class="defi <%= etat[d.id] ? 'fait' : '' %>" href="/defi/<%= d.id %>">
+              <span class="defi-titre"><%= d.titre %></span>
+              <span class="defi-meta"><%= etat[d.id] ? '✅ envoyé' : d.points_max + ' pts' %></span>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <% if (groupes.jour.length) { %>
+      <h2>Défis du jour (<%= jour %>)</h2>
+      <ul class="defis">
+        <% groupes.jour.forEach((d) => { %>
+          <li>
+            <a class="defi <%= etat[d.id] ? 'fait' : '' %>" href="/defi/<%= d.id %>">
+              <span class="defi-titre"><%= d.titre %></span>
+              <span class="defi-meta"><%= etat[d.id] ? '✅ envoyé' : d.points_max + ' pts' %></span>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <% if (!groupes.weekend.length && !groupes.jour.length) { %>
+      <p class="vide">Aucun défi disponible pour le moment.</p>
+    <% } %>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

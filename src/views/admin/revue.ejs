@@ -1,0 +1,62 @@
+<%- include('_head', { titre: 'Revue' }) %>
+<%- include('_nav', { actif: 'revue' }) %>
+<main class="page-admin">
+  <h1>Revue des soumissions</h1>
+  <% if (verrou) { %><p class="banniere">🔒 Rallye verrouillé (lecture seule). Déverrouille dans Réglages pour noter.</p><% } %>
+
+  <form class="filtres" method="get" action="/admin/revue">
+    <select name="binome">
+      <option value="">Tous les binômes</option>
+      <% binomes.forEach((b) => { %><option value="<%= b.id %>" <%= filtres.binome == String(b.id) ? 'selected' : '' %>><%= b.nom %></option><% }) %>
+    </select>
+    <select name="defi">
+      <option value="">Tous les défis</option>
+      <% defis.forEach((d) => { %><option value="<%= d.id %>" <%= filtres.defi == String(d.id) ? 'selected' : '' %>><%= d.titre %></option><% }) %>
+    </select>
+    <select name="statut">
+      <option value="">Tout statut</option>
+      <% ['soumis', 'valide', 'refuse'].forEach((v) => { %><option value="<%= v %>" <%= filtres.statut === v ? 'selected' : '' %>><%= v %></option><% }) %>
+    </select>
+    <select name="verdict">
+      <option value="">Tout verdict IA</option>
+      <% ['non_evalue', 'bon', 'mauvais', 'incertain', 'erreur'].forEach((v) => { %><option value="<%= v %>" <%= filtres.verdict === v ? 'selected' : '' %>><%= v %></option><% }) %>
+    </select>
+    <button class="btn-mini" type="submit">Filtrer</button>
+  </form>
+
+  <div class="actions-lot">
+    <button id="btn-valider-lot" class="btn-mini" type="button">✅ Valider la sélection (<span id="n-sel">0</span>)</button>
+    <span class="muted">Coche les « bon » haute confiance, puis valide en masse. Raccourcis : survole une carte, <kbd>V</kbd> valide, <kbd>R</kbd> refuse.</span>
+  </div>
+
+  <ul class="soumissions">
+    <% soumissions.forEach((s) => { %>
+      <li class="sub statut-<%= s.statut %>" data-id="<%= s.id %>">
+        <div class="sub-head">
+          <input type="checkbox" class="sel" <%= verrou ? 'disabled' : '' %>>
+          <strong><%= s.binome_nom %></strong> — <%= s.defi_titre %>
+          <span class="badge b-<%= s.statut %>"><%= s.statut %></span>
+          <% if (s.mode_validation === 'ia') { %>
+            <span class="badge v-<%= s.ia_verdict %>">IA&nbsp;: <%= s.ia_verdict %><%= s.ia_confiance != null ? ' ' + Math.round(s.ia_confiance * 100) + '%' : '' %></span>
+          <% } %>
+        </div>
+        <% if (s.photo_path) { %>
+          <a href="/uploads/<%= s.photo_path %>" target="_blank" rel="noopener">
+            <img class="sub-photo" src="/uploads/<%= s.thumb_path || s.photo_path %>" alt="photo soumise" loading="lazy">
+          </a>
+        <% } %>
+        <% if (s.texte) { %><p class="sub-texte">«&nbsp;<%= s.texte %>&nbsp;»</p><% } %>
+        <% if (s.reponse_attendue) { %><p class="muted">Réponse attendue : <strong><%= s.reponse_attendue %></strong></p><% } %>
+        <% if (s.ia_commentaire) { %><p class="muted">🤖 <%= s.ia_commentaire %></p><% } %>
+        <div class="sub-actions">
+          <input class="points" type="number" min="0" max="<%= s.points_max %>" value="<%= s.points_attribues != null ? s.points_attribues : s.points_max %>" aria-label="points">
+          <button class="btn-valider" type="button" <%= verrou ? 'disabled' : '' %>>Valider</button>
+          <button class="btn-refuser" type="button" <%= verrou ? 'disabled' : '' %>>Refuser</button>
+          <% if (s.mode_validation === 'ia') { %><button class="btn-reeval" type="button">Réévaluer IA</button><% } %>
+        </div>
+      </li>
+    <% }) %>
+  </ul>
+  <% if (!soumissions.length) { %><p class="muted">Aucune soumission pour ces filtres.</p><% } %>
+</main>
+<%- include('_foot') %>

@@ -1,0 +1,11 @@
+<header class="barre">
+  <strong class="barre-titre"><img class="barre-logo" src="/logo-latrace.svg" alt="La Trace"> Admin</strong>
+  <nav class="nav-admin">
+    <a href="/admin/revue" class="<%= actif === 'revue' ? 'on' : '' %>">Revue</a>
+    <a href="/admin/defis" class="<%= actif === 'defis' ? 'on' : '' %>">Défis</a>
+    <a href="/admin/binomes" class="<%= actif === 'binomes' ? 'on' : '' %>">Binômes</a>
+    <a href="/admin/classement" class="<%= actif === 'classement' ? 'on' : '' %>">Classement</a>
+    <a href="/admin/reglages" class="<%= actif === 'reglages' ? 'on' : '' %>">Réglages</a>
+    <form method="post" action="/admin/logout"><button class="lien" type="submit">Quitter</button></form>
+  </nav>
+</header>

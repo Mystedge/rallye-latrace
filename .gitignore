@@ -1,0 +1,11 @@
+node_modules/
+data/
+uploads/
+backup/
+.env
+*.log
+
+# Framework BMAD et config locale (pas du code applicatif)
+_bmad/
+.claude/
+.brand-src/

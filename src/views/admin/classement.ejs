@@ -1,0 +1,21 @@
+<%- include('_head', { titre: 'Classement' }) %>
+<%- include('_nav', { actif: 'classement' }) %>
+<main class="page-admin">
+  <h1>Classement <span class="muted">— réservé organisation</span></h1>
+  <table class="tbl">
+    <thead>
+      <tr><th>#</th><th>Binôme</th><th>Défis validés</th><th>Points</th></tr>
+    </thead>
+    <tbody>
+      <% lignes.forEach((l, i) => { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= l.nom %></td>
+          <td><%= l.nb_valides %></td>
+          <td><strong><%= l.total %></strong></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</main>
+<%- include('_foot') %>

@@ -1,0 +1,35 @@
+# Déploiement complet : l'app + Caddy (HTTPS automatique).
+#   1) créer le fichier .env (secrets) sur le VPS
+#   2) docker compose up -d --build
+#   3) docker compose exec app npm run seed     (une seule fois : binômes + défis)
+#
+# Si tu utilises déjà un reverse proxy (Nginx Proxy Manager, Traefik, Coolify…),
+# supprime le service "caddy" et fais pointer ton proxy vers le conteneur app:3000.
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env            # ADMIN_PASSWORD, SESSION_SECRET, ANTHROPIC_API_KEY…
+    volumes:
+      - rallye-data:/data     # base SQLite + photos + sauvegardes (persistant)
+    expose:
+      - "3000"                # interne : seul Caddy y accède
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data      # certificats Let's Encrypt (persistant)
+      - caddy-config:/config
+    depends_on:
+      - app
+
+volumes:
+  rallye-data:
+  caddy-data:
+  caddy-config:

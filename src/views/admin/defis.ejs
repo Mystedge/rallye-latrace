@@ -1,0 +1,29 @@
+<%- include('_head', { titre: 'Défis' }) %>
+<%- include('_nav', { actif: 'defis' }) %>
+<main class="page-admin">
+  <h1>Défis <a class="btn-mini" href="/admin/defis/nouveau">+ Nouveau défi</a></h1>
+  <table class="tbl">
+    <thead>
+      <tr><th>Ordre</th><th>Titre</th><th>Type</th><th>Dispo</th><th>Validation</th><th>Pts</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% defis.forEach((d) => { %>
+        <tr>
+          <td><%= d.ordre %></td>
+          <td><%= d.titre %></td>
+          <td><%= d.type %></td>
+          <td><%= d.disponibilite %></td>
+          <td><%= d.mode_validation %></td>
+          <td><%= d.points_max %></td>
+          <td class="nowrap">
+            <a class="lien" href="/admin/defis/<%= d.id %>">Modifier</a>
+            <form method="post" action="/admin/defis/<%= d.id %>/supprimer" onsubmit="return confirm('Supprimer ce défi et ses soumissions ?')" style="display:inline">
+              <button class="lien danger" type="submit">Suppr.</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</main>
+<%- include('_foot') %>

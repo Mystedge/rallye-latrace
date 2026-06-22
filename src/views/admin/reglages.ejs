@@ -1,0 +1,24 @@
+<%- include('_head', { titre: 'Réglages' }) %>
+<%- include('_nav', { actif: 'reglages' }) %>
+<main class="page-admin">
+  <h1>Réglages</h1>
+  <form method="post" action="/admin/reglages" class="form">
+    <label>Jour courant
+      <select name="jour_courant">
+        <% ['auto', 'weekend', 'J1', 'J2'].forEach((v) => { %><option value="<%= v %>" <%= jour_courant === v ? 'selected' : '' %>><%= v %></option><% }) %>
+      </select>
+    </label>
+    <p class="muted">Jour effectif appliqué actuellement : <strong><%= jour_effectif %></strong></p>
+
+    <label class="switch"><input type="checkbox" name="j2_ouvert" value="1" <%= j2_ouvert === '1' ? 'checked' : '' %>> Défis <strong>J2</strong> ouverts (à activer le dimanche matin)</label>
+
+    <label class="switch"><input type="checkbox" name="ia_activee" value="1" <%= ia_activee === '1' ? 'checked' : '' %>> Pré-qualification <strong>IA</strong> activée
+      <% if (!cle_ia) { %><span class="erreur">— ⚠️ clé API non configurée (.env)</span><% } %>
+    </label>
+
+    <label class="switch"><input type="checkbox" name="verrou_final" value="1" <%= verrou_final === '1' ? 'checked' : '' %>> 🔒 <strong>Verrouillage final</strong> (lecture seule, après dépouillement)</label>
+
+    <button class="btn" type="submit">Enregistrer les réglages</button>
+  </form>
+</main>
+<%- include('_foot') %>

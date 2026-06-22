@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#34765e">
+  <title><%= defi.titre %> — Rallye La Trace</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icon-180.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="barre">
+    <a class="lien" href="/accueil">← Retour</a>
+    <img class="barre-logo" src="/logo-latrace.svg" alt="La Trace">
+  </header>
+
+  <main class="page">
+    <h1 class="titre-defi"><%= defi.titre %></h1>
+    <% if (defi.description) { %><p class="consigne"><%= defi.description %></p><% } %>
+
+    <form id="form-defi" class="form" data-defi-id="<%= defi.id %>" data-type="<%= defi.type %>">
+      <% if (defi.type === 'texte' || defi.type === 'mixte') { %>
+        <label for="texte">Ta réponse</label>
+        <textarea id="texte" name="texte" rows="4" placeholder="Écris ta réponse…"><%= soumission && soumission.texte ? soumission.texte : '' %></textarea>
+      <% } %>
+
+      <% if (defi.type === 'photo' || defi.type === 'mixte') { %>
+        <label for="photo">Photo</label>
+        <% if (soumission && soumission.photo_path) { %>
+          <p class="muted">Photo déjà envoyée :</p>
+          <img class="apercu" src="/uploads/<%= soumission.thumb_path || soumission.photo_path %>" alt="photo précédente">
+          <p class="muted">Choisis une nouvelle photo pour la remplacer.</p>
+        <% } %>
+        <input id="photo" name="photo" type="file" accept="image/*">
+        <img id="apercu-nouveau" class="apercu" hidden alt="aperçu de la nouvelle photo">
+      <% } %>
+
+      <p id="etat-envoi" class="etat" role="status" aria-live="polite"></p>
+      <button type="submit" class="btn" id="btn-envoyer">Envoyer</button>
+    </form>
+  </main>
+
+  <script src="/vendor/browser-image-compression.js"></script>
+  <script src="/vendor/heic2any.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

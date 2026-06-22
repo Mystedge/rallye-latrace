@@ -1,0 +1,16 @@
+<%- include('_head', { titre: 'Connexion' }) %>
+<main class="centre">
+  <div class="carte">
+    <img class="logo-connexion" src="/logo-vert.svg" alt="La Trace" width="84" height="116">
+    <h1>Admin</h1>
+    <p class="sous-titre">La Trace · accès organisation.</p>
+    <% if (erreur) { %><p class="erreur"><%= erreur %></p><% } %>
+    <form method="post" action="/admin/login" class="form">
+      <label for="password">Mot de passe</label>
+      <input id="password" name="password" type="password" required autofocus autocomplete="current-password">
+      <button class="btn" type="submit">Entrer</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

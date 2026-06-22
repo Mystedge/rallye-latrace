@@ -1,0 +1,30 @@
+<%- include('_head', { titre: 'Binômes' }) %>
+<%- include('_nav', { actif: 'binomes' }) %>
+<main class="page-admin">
+  <h1>Binômes</h1>
+  <% if (erreur) { %><p class="erreur"><%= erreur %></p><% } %>
+
+  <ul class="binomes">
+    <% binomes.forEach((b) => { %>
+      <li class="bcard">
+        <form method="post" action="/admin/binomes/<%= b.id %>" class="form-inline">
+          <input name="nom" value="<%= b.nom %>" aria-label="nom">
+          <input name="code" value="<%= b.code %>" class="code-input" aria-label="code">
+          <button class="btn-mini" type="submit">Enregistrer</button>
+        </form>
+        <div class="bcard-actions">
+          <form method="post" action="/admin/binomes/<%= b.id %>/code"><button class="lien" type="submit">Régénérer code</button></form>
+          <form method="post" action="/admin/binomes/<%= b.id %>/supprimer" onsubmit="return confirm('Supprimer ce binôme et ses soumissions ?')"><button class="lien danger" type="submit">Supprimer</button></form>
+        </div>
+      </li>
+    <% }) %>
+  </ul>
+
+  <h2>Ajouter un binôme</h2>
+  <form method="post" action="/admin/binomes" class="form-inline">
+    <input name="nom" placeholder="Nom du binôme" required>
+    <input name="code" placeholder="Code (vide = auto)" class="code-input">
+    <button class="btn-mini" type="submit">Ajouter</button>
+  </form>
+</main>
+<%- include('_foot') %>

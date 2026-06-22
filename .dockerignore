@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+data
+uploads
+backup
+.env
+.env.*
+.git
+.gitignore
+*.log
+_bmad
+_bmad-output
+.brand-src
+.claude
+docs
