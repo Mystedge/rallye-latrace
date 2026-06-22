@@ -1,32 +1,24 @@
-# Déploiement avec Traefik (reverse proxy déjà présent sur le VPS).
-#   1) créer le fichier .env (secrets) sur le VPS
-#   2) adapter les 3 valeurs <ADAPTER> ci-dessous à ta config Traefik
-#   3) docker compose up -d --build
-#   4) docker compose exec app npm run seed     (une seule fois : binômes + défis)
+# Déploiement via le gestionnaire Docker de Hostinger (template "Docker and Traefik").
+# -> Colle l'URL BRUTE de ce fichier dans l'interface ; Hostinger configure Traefik + HTTPS.
+# L'image est construite automatiquement par GitHub Actions à chaque push (ghcr.io).
+# Les secrets (mot de passe admin, clé IA) se renseignent dans l'interface Hostinger, pas ici.
 #
-# Données (base SQLite + photos + sauvegardes) sur le volume rallye-data -> conservées à chaque update.
+# Déploiement en ligne de commande possible aussi :
+#   git clone https://github.com/Mystedge/rallye-latrace.git && cd rallye-latrace
+#   cp .env.example .env   (éditer les secrets)   puis   docker compose up -d
 
 services:
   app:
-    build: .
+    image: ghcr.io/mystedge/rallye-latrace:latest
     restart: unless-stopped
-    env_file: .env                 # ADMIN_PASSWORD, SESSION_SECRET, ANTHROPIC_API_KEY…
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - SESSION_SECRET=${SESSION_SECRET:-changez-moi}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
     volumes:
-      - rallye-data:/data
-    networks:
-      - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"                                # <ADAPTER> nom du réseau Traefik
-      - "traefik.http.routers.rallye.rule=Host(`app.latrace.bike`)"
-      - "traefik.http.routers.rallye.entrypoints=websecure"           # <ADAPTER> entrypoint TLS de ton Traefik
-      - "traefik.http.routers.rallye.tls=true"
-      - "traefik.http.routers.rallye.tls.certresolver=letsencrypt"    # <ADAPTER> nom de ton certresolver
-      - "traefik.http.services.rallye.loadbalancer.server.port=3000"
-
-networks:
-  proxy:
-    external: true                 # <ADAPTER> doit être le réseau externe utilisé par Traefik
+      - rallye-data:/data      # base SQLite + photos (persistant, survit aux mises à jour)
+    expose:
+      - "3000"                 # port interne de l'app (Traefik route dessus)
 
 volumes:
   rallye-data:
