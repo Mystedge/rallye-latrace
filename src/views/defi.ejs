@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#34765e">
   <title><%= defi.titre %> — Rallye La Trace</title>
   <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="/logo-vert.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/icon-180.png">
   <link rel="stylesheet" href="/styles.css">
 </head>
@@ -16,7 +18,9 @@
   </header>
 
   <main class="page">
-    <h1 class="titre-defi"><% if (defi.emoji) { %><span class="titre-emoji"><%= defi.emoji %></span> <% } %><%= defi.titre %></h1>
+    <% const estBonus = /^bonus\s*[—–-]\s*/i.test(defi.titre); const titreDefi = defi.titre.replace(/^bonus\s*[—–-]\s*/i, ''); %>
+    <% if (estBonus) { %><p class="ligne-bonus"><span class="tag-bonus">Défi bonus</span></p><% } %>
+    <h1 class="titre-defi"><% if (defi.emoji) { %><span class="titre-emoji"><%= defi.emoji %></span> <% } %><%= titreDefi %></h1>
     <% if (defi.description) { %><p class="consigne"><%= defi.description %></p><% } %>
 
     <% if (soumission) { %>

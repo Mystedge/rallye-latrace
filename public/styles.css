@@ -78,6 +78,14 @@ h1 { margin: 0 0 8px; font-size: 2rem; color: var(--vert); letter-spacing: .01em
 .barre-titre { font-size: 1.05rem; display: flex; align-items: center; gap: 10px; }
 .barre-logo { height: 30px; width: auto; display: block; }
 .barre .lien { color: #fff; }
+.barre form { margin: 0; display: flex; }
+.btn-deco {
+  background: rgba(255,255,255,.14); border: none; color: #fff; cursor: pointer;
+  width: 40px; height: 40px; border-radius: 999px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.btn-deco:hover, .btn-deco:active { background: rgba(255,255,255,.28); }
 .lien {
   background: none;
   border: none;
@@ -131,8 +139,14 @@ h2 { font-family: 'Lexend'; font-size: .8rem; font-weight: 700; color: var(--ver
   background: var(--vert-clair);
   border-radius: 999px;
 }
-.defi-titre { flex: 1 1 auto; min-width: 0; font-weight: 600; }
+.defi-corps { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.defi-titre { min-width: 0; font-weight: 600; }
 .defi-meta { color: var(--texte-doux); font-size: .9rem; white-space: nowrap; flex: 0 0 auto; }
+
+/* Défis bonus : accent doré + étiquette, pour les distinguer des défis principaux */
+.tag-bonus { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #8a6a00; background: #fbecbf; padding: 2px 9px; border-radius: 999px; line-height: 1.5; }
+.defi-bonus { background: #fffdf6; border-left-color: #efd283; }
+.defi-bonus .defi-emoji { background: #fbecbf; }
 
 /* États de soumission (liseré gauche + pastille de statut) */
 .defi.etat-valide { border-left-color: var(--vert); background: var(--vert-clair); }
@@ -144,13 +158,18 @@ h2 { font-family: 'Lexend'; font-size: .8rem; font-weight: 700; color: var(--ver
 .sp-soumis { background: var(--or); color: #5c4500; }
 .sp-refuse { background: var(--corail); color: #fff; }
 
-/* Onglets Aujourd'hui / Week-end */
+/* Onglets Aujourd'hui / Week-end — barre blanche collante qui ménage un espace sous le header */
+.onglets-barre {
+  position: sticky; top: 53px; z-index: 4;
+  background: var(--bg);
+  margin: 0 -16px;
+  padding: 12px 16px 4px;
+}
 .onglets {
   display: flex; gap: 6px;
   background: var(--vert-clair);
   padding: 5px; border-radius: 999px;
-  margin: 4px 0 6px;
-  position: sticky; top: 54px; z-index: 4;
+  margin: 0;
 }
 .onglet {
   flex: 1; font-family: inherit; font-size: .98rem; font-weight: 600;
@@ -162,6 +181,7 @@ h2 { font-family: 'Lexend'; font-size: .8rem; font-weight: 700; color: var(--ver
 .onglet-compte { font-size: .8rem; font-weight: 700; opacity: .7; }
 
 /* Bloc statut en tête de la fiche défi */
+.ligne-bonus { margin: 2px 4px 8px; }
 .titre-emoji { font-family: 'Lexend', system-ui, sans-serif; }
 .statut-bloc { border-radius: var(--rayon-sm); padding: 11px 14px; margin: 0 4px 14px; font-weight: 600; font-size: .98rem; }
 .sb-valide { background: var(--vert-clair); color: var(--vert-fonce); border: 1px solid #bcdccd; }
