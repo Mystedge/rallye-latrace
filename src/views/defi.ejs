@@ -50,7 +50,7 @@
           <% } %>
           <p class="muted">Choisis un nouveau fichier pour le remplacer.</p>
         <% } %>
-        <input id="photo" name="photo" type="file" accept="<%= attendVideo ? 'video/*' : 'image/*' %>"<%= attendVideo ? ' capture' : '' %>>
+        <input id="photo" name="photo" type="file" accept="<%= attendVideo ? 'video/*' : 'image/*' %>">
         <% if (attendVideo) { %><p class="muted">Filme court : environ 1 min, 150 Mo max.</p><% } %>
         <% if (attendVideo) { %>
           <video id="apercu-nouveau" class="apercu" hidden controls></video>
