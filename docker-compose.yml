@@ -1,35 +1,32 @@
-# Déploiement complet : l'app + Caddy (HTTPS automatique).
+# Déploiement avec Traefik (reverse proxy déjà présent sur le VPS).
 #   1) créer le fichier .env (secrets) sur le VPS
-#   2) docker compose up -d --build
-#   3) docker compose exec app npm run seed     (une seule fois : binômes + défis)
+#   2) adapter les 3 valeurs <ADAPTER> ci-dessous à ta config Traefik
+#   3) docker compose up -d --build
+#   4) docker compose exec app npm run seed     (une seule fois : binômes + défis)
 #
-# Si tu utilises déjà un reverse proxy (Nginx Proxy Manager, Traefik, Coolify…),
-# supprime le service "caddy" et fais pointer ton proxy vers le conteneur app:3000.
+# Données (base SQLite + photos + sauvegardes) sur le volume rallye-data -> conservées à chaque update.
 
 services:
   app:
     build: .
     restart: unless-stopped
-    env_file: .env            # ADMIN_PASSWORD, SESSION_SECRET, ANTHROPIC_API_KEY…
+    env_file: .env                 # ADMIN_PASSWORD, SESSION_SECRET, ANTHROPIC_API_KEY…
     volumes:
-      - rallye-data:/data     # base SQLite + photos + sauvegardes (persistant)
-    expose:
-      - "3000"                # interne : seul Caddy y accède
+      - rallye-data:/data
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"                                # <ADAPTER> nom du réseau Traefik
+      - "traefik.http.routers.rallye.rule=Host(`app.latrace.bike`)"
+      - "traefik.http.routers.rallye.entrypoints=websecure"           # <ADAPTER> entrypoint TLS de ton Traefik
+      - "traefik.http.routers.rallye.tls=true"
+      - "traefik.http.routers.rallye.tls.certresolver=letsencrypt"    # <ADAPTER> nom de ton certresolver
+      - "traefik.http.services.rallye.loadbalancer.server.port=3000"
 
-  caddy:
-    image: caddy:2
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data      # certificats Let's Encrypt (persistant)
-      - caddy-config:/config
-    depends_on:
-      - app
+networks:
+  proxy:
+    external: true                 # <ADAPTER> doit être le réseau externe utilisé par Traefik
 
 volumes:
   rallye-data:
-  caddy-data:
-  caddy-config:

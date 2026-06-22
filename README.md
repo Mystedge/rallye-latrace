@@ -140,7 +140,7 @@ GitHub + Docker. Les données (base SQLite, photos) vivent dans un **volume** �
 3. **Mise à jour** : `git pull && docker compose up -d --build` (ou `sh deploy/update.sh`).
 4. **Sauvegarde** : `docker compose exec app npm run backup` (cron horaire côté hôte) ; le volume contient `/data/backup` à synchroniser hors-VPS avant J0.
 
-> Reverse proxy existant (Nginx Proxy Manager, Traefik, Coolify…) ? Retire le service `caddy` du `docker-compose.yml` et pointe ton proxy vers le conteneur `app:3000`.
+> **Traefik** : le `docker-compose.yml` est déjà configuré avec les labels Traefik (pas de service Caddy). Avant le `up`, adapte dans le compose les 3 valeurs marquées `<ADAPTER>` : le **réseau externe** de Traefik (`docker network ls`), l'**entrypoint** TLS (souvent `websecure`) et le nom du **certresolver** (souvent `letsencrypt`). L'upload est borné par l'app (multer 8 Mo), pas besoin de limite côté Traefik.
 
 ### Sans Docker (pm2)
 
