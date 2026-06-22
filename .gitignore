@@ -1,7 +1,7 @@
 node_modules/
-data/
-uploads/
-backup/
+/data/
+/uploads/
+/backup/
 .env
 *.log
 

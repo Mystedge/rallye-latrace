@@ -23,7 +23,12 @@ const BINOMES = [
 ];
 
 // Défis issus des roadbooks (week-end + J1 + J2). Source de vérité : src/data/defis.json
-const DEFIS = JSON.parse(readFileSync(join(__dirname, 'data', 'defis.json'), 'utf8'));
+let DEFIS = [];
+try {
+  DEFIS = JSON.parse(readFileSync(join(__dirname, 'data', 'defis.json'), 'utf8'));
+} catch (e) {
+  console.error('⚠ src/data/defis.json introuvable — seed des défis ignoré:', e.message);
+}
 
 const findBinome = db.prepare('SELECT id, code FROM binomes WHERE nom = ?');
 const insBinome = db.prepare('INSERT INTO binomes (nom, code) VALUES (?, ?)');

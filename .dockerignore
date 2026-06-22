@@ -1,8 +1,8 @@
 node_modules
 npm-debug.log
-data
-uploads
-backup
+/data
+/uploads
+/backup
 .env
 .env.*
 .git
