@@ -119,15 +119,24 @@ admin.post('/admin/api/valider-lot', requireAdmin, (req, res) => {
 });
 
 // ── CRUD défis ──
+// « Type de réponse » (un seul menu admin) -> structure (type) + média attendu (media).
+const TYPE_REPONSE = {
+  photo:       { type: 'photo', media: 'photo' },
+  video:       { type: 'photo', media: 'video' },
+  texte:       { type: 'texte', media: 'photo' },
+  photo_texte: { type: 'mixte', media: 'photo' },
+  video_texte: { type: 'mixte', media: 'video' },
+};
 function defiDepuisBody(body) {
+  const tr = TYPE_REPONSE[body.type_reponse] || TYPE_REPONSE.photo;
   return {
     titre: String(body.titre || '').trim(),
     description: String(body.description || ''),
     emoji: body.emoji ? String(body.emoji).trim() : null,
     bonus: body.bonus ? 1 : 0,
-    media: body.media === 'video' ? 'video' : 'photo',
+    media: tr.media,
     live: body.live ? 1 : 0,
-    type: ['photo', 'texte', 'mixte'].includes(body.type) ? body.type : 'photo',
+    type: tr.type,
     disponibilite: ['weekend', 'J1', 'J2'].includes(body.disponibilite) ? body.disponibilite : 'weekend',
     mode_validation: ['manuel', 'auto', 'ia'].includes(body.mode_validation) ? body.mode_validation : 'manuel',
     critere_ia: body.critere_ia ? String(body.critere_ia) : null,

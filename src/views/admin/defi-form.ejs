@@ -21,15 +21,19 @@
         <label class="switch"><input type="checkbox" name="supprimer_image" value="1"> Retirer cette image</label>
       </div>
     <% } %>
-    <label>Type
-      <select name="type">
-        <% ['photo', 'texte', 'mixte'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.type === t ? 'selected' : '' %>><%= t %></option><% }) %>
-      </select>
-    </label>
-    <label>Média attendu <span class="muted">(défis photo / mixte)</span>
-      <select name="media">
-        <option value="photo" <%= !defi || defi.media !== 'video' ? 'selected' : '' %>>Photo</option>
-        <option value="video" <%= defi && defi.media === 'video' ? 'selected' : '' %>>Vidéo (clip court)</option>
+    <%
+      // Valeur unique « type de réponse » dérivée de (type, media) en base.
+      let typeReponse = 'photo';
+      if (defi) {
+        if (defi.type === 'texte') typeReponse = 'texte';
+        else if (defi.type === 'mixte') typeReponse = (defi.media === 'video') ? 'video_texte' : 'photo_texte';
+        else typeReponse = (defi.media === 'video') ? 'video' : 'photo';
+      }
+      const optionsTR = [['photo', 'Photo'], ['video', 'Vidéo (clip court)'], ['texte', 'Texte'], ['photo_texte', 'Photo + texte'], ['video_texte', 'Vidéo + texte']];
+    %>
+    <label>Type de réponse <span class="muted">(ce que le binôme envoie)</span>
+      <select name="type_reponse">
+        <% optionsTR.forEach(([v, lab]) => { %><option value="<%= v %>" <%= typeReponse === v ? 'selected' : '' %>><%= lab %></option><% }) %>
       </select>
     </label>
     <label>Disponibilité
