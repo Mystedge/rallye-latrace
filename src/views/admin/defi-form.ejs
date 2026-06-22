@@ -28,6 +28,11 @@
         <% ['manuel', 'auto', 'ia'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.mode_validation === t ? 'selected' : '' %>><%= t %></option><% }) %>
       </select>
     </label>
+    <p class="aide-modes">
+      <strong>manuel</strong> — tu valides ou refuses chaque soumission à la main. À choisir par défaut, pour la grande majorité des défis (photos à juger, défis sur le terrain).<br>
+      <strong>auto</strong> — la réponse du binôme est comparée automatiquement à la <em>« réponse attendue »</em> ci-dessous. Réserve-le aux énigmes à réponse exacte et connue (un mot, un nombre).<br>
+      <strong>ia</strong> — l'IA pré-trie les photos selon le <em>« critère IA »</em> ci-dessous (bon / incertain / mauvais) pour te faire gagner du temps, mais tu gardes toujours le dernier mot. Utile s'il y a beaucoup de photos similaires à filtrer.
+    </p>
     <label>Réponse attendue <span class="muted">(mode auto)</span>
       <input name="reponse_attendue" value="<%= defi && defi.reponse_attendue ? defi.reponse_attendue : '' %>">
     </label>

@@ -75,8 +75,11 @@ h1 { margin: 0 0 8px; font-size: 2rem; color: var(--vert); letter-spacing: .01em
   top: 0;
   z-index: 5;
 }
-.barre-titre { font-size: 1.05rem; display: flex; align-items: center; gap: 10px; }
-.barre-logo { height: 30px; width: auto; display: block; }
+.barre-titre { font-size: 1.05rem; display: flex; align-items: center; gap: 10px; min-width: 0; flex: 0 1 auto; }
+.barre-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.barre-logo { height: 30px; width: auto; display: block; flex: 0 0 auto; }
+.barre-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.score-pill { background: rgba(255,255,255,.18); color: #fff; font-weight: 700; font-size: .92rem; padding: 6px 11px; border-radius: 999px; white-space: nowrap; }
 .barre .lien { color: #fff; }
 .barre form { margin: 0; display: flex; }
 .btn-deco {
@@ -236,6 +239,8 @@ textarea { resize: vertical; }
 .nav-admin .lien { color: rgba(255,255,255,.82); }
 
 .page-admin { max-width: 920px; margin: 0 auto; padding: 16px; }
+.aide-modes { background: var(--vert-clair); border-radius: var(--rayon-sm); padding: 11px 14px; line-height: 1.65; font-size: .95rem; color: var(--texte); margin: -4px 0 4px; }
+.aide-modes strong { color: var(--vert-fonce); }
 .page-admin h1 { font-size: 1.7rem; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
 .filtres { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }

@@ -46,12 +46,13 @@ participant.get('/accueil', requireBinome, (req, res) => {
   const binome = getBinomeById(req.session.binomeId);
   if (!binome) { req.session = null; return res.redirect('/'); }
   const etat = mapSoumissions(binome.id);
+  const score = Object.values(etat).reduce((s, e) => s + (e.statut === 'valide' && e.points ? e.points : 0), 0);
   const visibles = listDefisOrdonnes().filter(defiVisible);
   const groupes = {
     weekend: visibles.filter((d) => d.disponibilite === 'weekend'),
     jour: visibles.filter((d) => d.disponibilite !== 'weekend'),
   };
-  res.render('accueil', { binome, groupes, etat, jour: jourEffectif() });
+  res.render('accueil', { binome, groupes, etat, jour: jourEffectif(), score });
 });
 
 // Formulaire d'un défi (pré-rempli si déjà soumis)
