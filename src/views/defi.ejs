@@ -16,8 +16,18 @@
   </header>
 
   <main class="page">
-    <h1 class="titre-defi"><%= defi.titre %></h1>
+    <h1 class="titre-defi"><% if (defi.emoji) { %><span class="titre-emoji"><%= defi.emoji %></span> <% } %><%= defi.titre %></h1>
     <% if (defi.description) { %><p class="consigne"><%= defi.description %></p><% } %>
+
+    <% if (soumission) { %>
+      <% if (soumission.statut === 'valide') { %>
+        <p class="statut-bloc sb-valide">✅ Réponse validée<%= soumission.points_attribues != null ? ' — ' + soumission.points_attribues + ' pts' : '' %></p>
+      <% } else if (soumission.statut === 'refuse') { %>
+        <p class="statut-bloc sb-refuse">❌ Réponse erronée — tu peux en renvoyer une nouvelle.</p>
+      <% } else { %>
+        <p class="statut-bloc sb-soumis">⏳ Réponse envoyée — en attente de validation par l'organisation.</p>
+      <% } %>
+    <% } %>
 
     <form id="form-defi" class="form" data-defi-id="<%= defi.id %>" data-type="<%= defi.type %>">
       <% if (defi.type === 'texte' || defi.type === 'mixte') { %>

@@ -18,35 +18,61 @@
   <main class="page">
     <div id="banniere-attente" class="banniere" hidden></div>
 
-    <% if (groupes.weekend.length) { %>
-      <h2>Défis week-end</h2>
-      <ul class="defis">
-        <% groupes.weekend.forEach((d) => { %>
-          <li>
-            <a class="defi <%= etat[d.id] ? 'fait' : '' %>" href="/defi/<%= d.id %>">
-              <span class="defi-titre"><%= d.titre %></span>
-              <span class="defi-meta"><%= etat[d.id] ? '✅ envoyé' : d.points_max + ' pts' %></span>
-            </a>
-          </li>
-        <% }) %>
-      </ul>
+    <%
+      // Métadonnée affichée à droite de chaque défi selon l'état de la soumission.
+      function metaDefi(e, d) {
+        if (!e) return { cls: '', pill: '', txt: d.points_max + ' pts' };
+        if (e.statut === 'valide') return { cls: 'etat-valide', pill: 'sp-valide', txt: 'Validé' + (e.points != null ? ' · ' + e.points + ' pts' : '') };
+        if (e.statut === 'refuse') return { cls: 'etat-refuse', pill: 'sp-refuse', txt: 'Erroné' };
+        return { cls: 'etat-soumis', pill: 'sp-soumis', txt: 'Envoyé' };
+      }
+      const countValide = (arr) => arr.filter((d) => etat[d.id] && etat[d.id].statut === 'valide').length;
+      const aJour = groupes.jour.length > 0;
+      const aWeekend = groupes.weekend.length > 0;
+    %>
+
+    <% if (aJour && aWeekend) { %>
+      <nav class="onglets" role="tablist">
+        <button class="onglet" type="button" data-cible="jour">Aujourd'hui <span class="onglet-compte"><%= countValide(groupes.jour) %>/<%= groupes.jour.length %></span></button>
+        <button class="onglet" type="button" data-cible="weekend">Week-end <span class="onglet-compte"><%= countValide(groupes.weekend) %>/<%= groupes.weekend.length %></span></button>
+      </nav>
     <% } %>
 
-    <% if (groupes.jour.length) { %>
-      <h2>Défis du jour (<%= jour %>)</h2>
-      <ul class="defis">
-        <% groupes.jour.forEach((d) => { %>
-          <li>
-            <a class="defi <%= etat[d.id] ? 'fait' : '' %>" href="/defi/<%= d.id %>">
-              <span class="defi-titre"><%= d.titre %></span>
-              <span class="defi-meta"><%= etat[d.id] ? '✅ envoyé' : d.points_max + ' pts' %></span>
-            </a>
-          </li>
-        <% }) %>
-      </ul>
+    <% if (aJour) { %>
+      <section class="groupe" data-groupe="jour">
+        <h2>Défis du jour (<%= jour %>)</h2>
+        <ul class="defis">
+          <% groupes.jour.forEach((d) => { const m = metaDefi(etat[d.id], d); %>
+            <li>
+              <a class="defi <%= m.cls %>" href="/defi/<%= d.id %>">
+                <span class="defi-emoji"><%= d.emoji || '📍' %></span>
+                <span class="defi-titre"><%= d.titre %></span>
+                <% if (m.pill) { %><span class="statut-pill <%= m.pill %>"><%= m.txt %></span><% } else { %><span class="defi-meta"><%= m.txt %></span><% } %>
+              </a>
+            </li>
+          <% }) %>
+        </ul>
+      </section>
     <% } %>
 
-    <% if (!groupes.weekend.length && !groupes.jour.length) { %>
+    <% if (aWeekend) { %>
+      <section class="groupe" data-groupe="weekend">
+        <h2>Défis week-end</h2>
+        <ul class="defis">
+          <% groupes.weekend.forEach((d) => { const m = metaDefi(etat[d.id], d); %>
+            <li>
+              <a class="defi <%= m.cls %>" href="/defi/<%= d.id %>">
+                <span class="defi-emoji"><%= d.emoji || '📍' %></span>
+                <span class="defi-titre"><%= d.titre %></span>
+                <% if (m.pill) { %><span class="statut-pill <%= m.pill %>"><%= m.txt %></span><% } else { %><span class="defi-meta"><%= m.txt %></span><% } %>
+              </a>
+            </li>
+          <% }) %>
+        </ul>
+      </section>
+    <% } %>
+
+    <% if (!aJour && !aWeekend) { %>
       <p class="vide">Aucun défi disponible pour le moment.</p>
     <% } %>
   </main>

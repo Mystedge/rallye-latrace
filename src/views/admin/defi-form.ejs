@@ -6,6 +6,9 @@
     <label>Titre
       <input name="titre" required value="<%= defi ? defi.titre : '' %>">
     </label>
+    <label>Émoji <span class="muted">(affiché côté participant, ex. 🔍 ⛪ 🚴)</span>
+      <input name="emoji" maxlength="8" value="<%= defi && defi.emoji ? defi.emoji : '' %>" style="max-width:120px; font-size:1.4rem; text-align:center">
+    </label>
     <label>Consigne / description
       <textarea name="description" rows="3"><%= defi ? defi.description : '' %></textarea>
     </label>

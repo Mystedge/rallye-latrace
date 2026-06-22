@@ -7,7 +7,7 @@ const _binomeById   = db.prepare('SELECT * FROM binomes WHERE id = ?');
 const _defisOrdered  = db.prepare('SELECT * FROM defis ORDER BY ordre, id');
 const _defi          = db.prepare('SELECT * FROM defis WHERE id = ?');
 const _soumission    = db.prepare('SELECT * FROM soumissions WHERE binome_id = ? AND defi_id = ?');
-const _soumissionsBinome = db.prepare('SELECT defi_id, statut FROM soumissions WHERE binome_id = ?');
+const _soumissionsBinome = db.prepare('SELECT defi_id, statut, points_attribues FROM soumissions WHERE binome_id = ?');
 
 export const getBinomeByCode = (code) => _binomeByCode.get(code);
 export const getBinomeById   = (id) => _binomeById.get(id);
@@ -15,10 +15,10 @@ export const listDefisOrdonnes = () => _defisOrdered.all();
 export const getDefi = (id) => _defi.get(id);
 export const getSoumission = (binomeId, defiId) => _soumission.get(binomeId, defiId);
 
-// defiId -> statut (pour la coche « envoyé » côté accueil)
+// defiId -> { statut, points } (état + points attribués, pour l'affichage participant)
 export function mapSoumissions(binomeId) {
   const m = Object.create(null);
-  for (const r of _soumissionsBinome.all(binomeId)) m[r.defi_id] = r.statut;
+  for (const r of _soumissionsBinome.all(binomeId)) m[r.defi_id] = { statut: r.statut, points: r.points_attribues };
   return m;
 }
 
@@ -103,9 +103,9 @@ export const validerSoumission = (id, points) => _valider.run(points, id);
 export const refuserSoumission = (id) => _refuser.run(id);
 
 // ─────────── Admin : CRUD défis ───────────
-const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
-  VALUES (@titre,@description,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
-const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,type=@type,disponibilite=@disponibilite,
+const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
+  VALUES (@titre,@description,@emoji,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
+const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,type=@type,disponibilite=@disponibilite,
   mode_validation=@mode_validation,critere_ia=@critere_ia,reponse_attendue=@reponse_attendue,points_max=@points_max,ordre=@ordre WHERE id=@id`);
 export const creerDefi = (d) => _creerDefi.run(d).lastInsertRowid;
 export const majDefi = (id, d) => _majDefi.run({ ...d, id });

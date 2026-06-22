@@ -34,8 +34,8 @@ const findBinome = db.prepare('SELECT id, code FROM binomes WHERE nom = ?');
 const insBinome = db.prepare('INSERT INTO binomes (nom, code) VALUES (?, ?)');
 const findDefi = db.prepare('SELECT id FROM defis WHERE titre = ?');
 const insDefi = db.prepare(`
-  INSERT INTO defis (titre, description, type, disponibilite, mode_validation, reponse_attendue, critere_ia, points_max, ordre)
-  VALUES (@titre, @description, @type, @disponibilite, @mode_validation, @reponse_attendue, @critere_ia, @points_max, @ordre)
+  INSERT INTO defis (titre, description, emoji, type, disponibilite, mode_validation, reponse_attendue, critere_ia, points_max, ordre)
+  VALUES (@titre, @description, @emoji, @type, @disponibilite, @mode_validation, @reponse_attendue, @critere_ia, @points_max, @ordre)
 `);
 
 function codeUnique() {
@@ -63,6 +63,7 @@ export function executerSeed() {
         insDefi.run({
           titre: d.titre,
           description: d.description || '',
+          emoji: d.emoji ?? null,
           type: d.type || 'photo',
           disponibilite: d.disponibilite || 'weekend',
           mode_validation: d.mode_validation || 'manuel',
@@ -76,6 +77,21 @@ export function executerSeed() {
     return binomes;
   });
   return tx();
+}
+
+// Backfill des émojis depuis defis.json — idempotent, joué à chaque démarrage.
+// Ne remplit que les défis sans émoji (les éditions faites en admin sont préservées).
+const _backfillEmoji = db.prepare(
+  "UPDATE defis SET emoji = @emoji WHERE titre = @titre AND (emoji IS NULL OR emoji = '')"
+);
+export function synchroniserEmojis() {
+  let n = 0;
+  db.transaction(() => {
+    for (const d of DEFIS) {
+      if (d.emoji) n += _backfillEmoji.run({ titre: d.titre, emoji: d.emoji }).changes;
+    }
+  })();
+  return n;
 }
 
 // Exécution directe : `npm run seed`

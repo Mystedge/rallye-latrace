@@ -4,12 +4,13 @@
   <h1>Défis <a class="btn-mini" href="/admin/defis/nouveau">+ Nouveau défi</a></h1>
   <table class="tbl">
     <thead>
-      <tr><th>Ordre</th><th>Titre</th><th>Type</th><th>Dispo</th><th>Validation</th><th>Pts</th><th></th></tr>
+      <tr><th>Ordre</th><th></th><th>Titre</th><th>Type</th><th>Dispo</th><th>Validation</th><th>Pts</th><th></th></tr>
     </thead>
     <tbody>
       <% defis.forEach((d) => { %>
         <tr>
           <td><%= d.ordre %></td>
+          <td style="font-size:1.3rem"><%= d.emoji || '' %></td>
           <td><%= d.titre %></td>
           <td><%= d.type %></td>
           <td><%= d.disponibilite %></td>

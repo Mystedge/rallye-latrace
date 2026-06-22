@@ -23,6 +23,10 @@
 
 * { box-sizing: border-box; }
 
+/* L'attribut [hidden] doit toujours l'emporter sur un display: défini par une classe
+   (sinon l'aperçu photo et les onglets restent visibles à tort). */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font-family: 'Lexend', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -119,10 +123,50 @@ h2 { font-family: 'Lexend'; font-size: .8rem; font-weight: 700; color: var(--ver
   transition: border-color .15s, box-shadow .15s;
 }
 .defi:active, .defi:hover { border-left-color: var(--vert); box-shadow: var(--ombre); }
-.defi.fait { border-left-color: var(--vert); background: var(--vert-clair); }
-.defi-titre { font-weight: 600; }
-.defi-meta { color: var(--texte-doux); font-size: .9rem; white-space: nowrap; }
-.defi.fait .defi-meta { color: var(--vert); font-weight: 600; }
+.defi-emoji {
+  flex: 0 0 auto;
+  width: 42px; height: 42px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.35rem; line-height: 1;
+  background: var(--vert-clair);
+  border-radius: 999px;
+}
+.defi-titre { flex: 1 1 auto; min-width: 0; font-weight: 600; }
+.defi-meta { color: var(--texte-doux); font-size: .9rem; white-space: nowrap; flex: 0 0 auto; }
+
+/* États de soumission (liseré gauche + pastille de statut) */
+.defi.etat-valide { border-left-color: var(--vert); background: var(--vert-clair); }
+.defi.etat-valide .defi-emoji { background: #d8e8e1; }
+.defi.etat-soumis { border-left-color: var(--or); }
+.defi.etat-refuse { border-left-color: var(--corail); }
+.statut-pill { flex: 0 0 auto; font-size: .72rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.sp-valide { background: var(--vert); color: #fff; }
+.sp-soumis { background: var(--or); color: #5c4500; }
+.sp-refuse { background: var(--corail); color: #fff; }
+
+/* Onglets Aujourd'hui / Week-end */
+.onglets {
+  display: flex; gap: 6px;
+  background: var(--vert-clair);
+  padding: 5px; border-radius: 999px;
+  margin: 4px 0 6px;
+  position: sticky; top: 54px; z-index: 4;
+}
+.onglet {
+  flex: 1; font-family: inherit; font-size: .98rem; font-weight: 600;
+  padding: 11px 8px; border: none; background: transparent; color: var(--vert-fonce);
+  border-radius: 999px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+}
+.onglet.on { background: #fff; color: var(--vert); box-shadow: var(--ombre); }
+.onglet-compte { font-size: .8rem; font-weight: 700; opacity: .7; }
+
+/* Bloc statut en tête de la fiche défi */
+.titre-emoji { font-family: 'Lexend', system-ui, sans-serif; }
+.statut-bloc { border-radius: var(--rayon-sm); padding: 11px 14px; margin: 0 4px 14px; font-weight: 600; font-size: .98rem; }
+.sb-valide { background: var(--vert-clair); color: var(--vert-fonce); border: 1px solid #bcdccd; }
+.sb-soumis { background: #fff7e0; color: #7a5b00; border: 1px solid var(--or); }
+.sb-refuse { background: #fdeceb; color: #b23b32; border: 1px solid var(--corail); }
 
 /* ───────── Formulaires ───────── */
 .form { display: flex; flex-direction: column; gap: 14px; }

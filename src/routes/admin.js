@@ -88,6 +88,7 @@ function defiDepuisBody(body) {
   return {
     titre: String(body.titre || '').trim(),
     description: String(body.description || ''),
+    emoji: body.emoji ? String(body.emoji).trim() : null,
     type: ['photo', 'texte', 'mixte'].includes(body.type) ? body.type : 'photo',
     disponibilite: ['weekend', 'J1', 'J2'].includes(body.disponibilite) ? body.disponibilite : 'weekend',
     mode_validation: ['manuel', 'auto', 'ia'].includes(body.mode_validation) ? body.mode_validation : 'manuel',

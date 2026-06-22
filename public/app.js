@@ -115,7 +115,13 @@
     if (inputPhoto && apercu) {
       inputPhoto.addEventListener('change', () => {
         const f = inputPhoto.files[0];
-        if (f) { apercu.src = URL.createObjectURL(f); apercu.hidden = false; }
+        if (f) {
+          apercu.src = URL.createObjectURL(f);
+          apercu.hidden = false;
+        } else {
+          apercu.hidden = true;
+          apercu.removeAttribute('src'); // pas d'aperçu cassé tant qu'aucune photo n'est choisie
+        }
       });
     }
 
@@ -171,10 +177,27 @@
     });
   }
 
+  // ───────────────────────── Onglets accueil (Aujourd'hui / Week-end) ─────────────────────────
+  // Amélioration progressive : sans JS, les deux groupes restent affichés empilés.
+  function wireOnglets() {
+    const nav = document.querySelector('.onglets');
+    if (!nav) return;
+    const boutons = [...nav.querySelectorAll('.onglet')];
+    const sections = [...document.querySelectorAll('.groupe')];
+    if (!boutons.length || !sections.length) return;
+    const activer = (cible) => {
+      boutons.forEach((b) => b.classList.toggle('on', b.dataset.cible === cible));
+      sections.forEach((s) => { s.hidden = s.dataset.groupe !== cible; });
+    };
+    boutons.forEach((b) => b.addEventListener('click', () => activer(b.dataset.cible)));
+    activer(boutons[0].dataset.cible); // défaut : 1er onglet (= Aujourd'hui)
+  }
+
   // ───────────────────────── Démarrage ─────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('form-defi');
     if (form) wireDefi(form);
+    wireOnglets();
     majBanniere();
     sync();
   });
