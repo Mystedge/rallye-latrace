@@ -1,11 +1,7 @@
 # Déploiement via le gestionnaire Docker de Hostinger (template "Docker and Traefik").
-# -> Colle l'URL BRUTE de ce fichier dans l'interface ; Hostinger configure Traefik + HTTPS.
 # L'image est construite automatiquement par GitHub Actions à chaque push (ghcr.io).
-# Les secrets (mot de passe admin, clé IA) se renseignent dans l'interface Hostinger, pas ici.
-#
-# Déploiement en ligne de commande possible aussi :
-#   git clone https://github.com/Mystedge/rallye-latrace.git && cd rallye-latrace
-#   cp .env.example .env   (éditer les secrets)   puis   docker compose up -d
+# Traefik route app.latrace.bike -> ce conteneur (entrypoint websecure, certresolver letsencrypt).
+# Les secrets (ADMIN_PASSWORD, SESSION_SECRET, ANTHROPIC_API_KEY) se définissent dans l'interface.
 
 services:
   app:
@@ -16,9 +12,21 @@ services:
       - SESSION_SECRET=${SESSION_SECRET:-changez-moi}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
     volumes:
-      - rallye-data:/data      # base SQLite + photos (persistant, survit aux mises à jour)
-    expose:
-      - "3000"                 # port interne de l'app (Traefik route dessus)
+      - rallye-data:/data       # base SQLite + photos (persistant)
+    networks:
+      - rallye-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=rallye-net"
+      - "traefik.http.routers.rallye.rule=Host(`app.latrace.bike`)"
+      - "traefik.http.routers.rallye.entrypoints=websecure"
+      - "traefik.http.routers.rallye.tls=true"
+      - "traefik.http.routers.rallye.tls.certresolver=letsencrypt"
+      - "traefik.http.services.rallye.loadbalancer.server.port=3000"
+
+networks:
+  rallye-net:
+    name: rallye-net
 
 volumes:
   rallye-data:
