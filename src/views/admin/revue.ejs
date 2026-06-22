@@ -50,9 +50,13 @@
           </button>
         </div>
         <% if (s.photo_path) { %>
-          <a href="/uploads/<%= s.photo_path %>" target="_blank" rel="noopener">
-            <img class="sub-photo" src="/uploads/<%= s.thumb_path || s.photo_path %>" alt="photo soumise" loading="lazy">
-          </a>
+          <% if (/\.(mp4|mov|webm|m4v|3gp)$/i.test(s.photo_path)) { %>
+            <video class="sub-photo" src="/uploads/<%= s.photo_path %>" controls preload="metadata"></video>
+          <% } else { %>
+            <a href="/uploads/<%= s.photo_path %>" target="_blank" rel="noopener">
+              <img class="sub-photo" src="/uploads/<%= s.thumb_path || s.photo_path %>" alt="photo soumise" loading="lazy">
+            </a>
+          <% } %>
         <% } %>
         <% if (s.texte) { %><p class="sub-texte">«&nbsp;<%= s.texte %>&nbsp;»</p><% } %>
         <% if (s.reponse_attendue) { %><p class="muted">Réponse attendue : <strong><%= s.reponse_attendue %></strong></p><% } %>

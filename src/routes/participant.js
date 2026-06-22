@@ -8,10 +8,18 @@ import {
   getBinomeByCode, getBinomeById, listDefisOrdonnes, getDefi,
   getSoumission, mapSoumissions, upsertSoumission,
 } from '../repo.js';
-import { traiterPhoto } from '../images.js';
+import { traiterPhoto, stockerVideo } from '../images.js';
 import { enqueue } from '../prequalif.js';
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 60 * 1024 * 1024 } });
+// Enveloppe multer : transforme une erreur (fichier trop volumineux) en 413 propre
+// pour que le client abandonne l'envoi au lieu de boucler.
+function uploadPhoto(req, res, next) {
+  upload.single('photo')(req, res, (err) => {
+    if (err) return res.status(err.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ ok: false, erreur: 'Fichier trop volumineux.' });
+    next();
+  });
+}
 
 export const participant = Router();
 
@@ -64,7 +72,7 @@ participant.get('/defi/:id', requireBinome, (req, res) => {
 });
 
 // Soumission (multipart) : upsert idempotent, réponse immédiate, pré-qualif déclenchée ensuite
-participant.post('/api/soumissions', requireBinome, upload.single('photo'), async (req, res) => {
+participant.post('/api/soumissions', requireBinome, uploadPhoto, async (req, res) => {
   try {
     if (getParam('verrou_final') === '1') {
       return res.status(423).json({ ok: false, erreur: 'Le rallye est verrouillé.' });
@@ -82,7 +90,12 @@ participant.post('/api/soumissions', requireBinome, upload.single('photo'), asyn
     let thumb_path = ancienneThumb;
     let remplacee = false;
     if (req.file?.buffer?.length) {
-      ({ photo_path, thumb_path } = await traiterPhoto(req.file.buffer));
+      if ((req.file.mimetype || '').startsWith('video/')) {
+        photo_path = await stockerVideo(req.file.buffer, req.file.mimetype, req.file.originalname);
+        thumb_path = null;
+      } else {
+        ({ photo_path, thumb_path } = await traiterPhoto(req.file.buffer));
+      }
       remplacee = true;
     }
     const texte = req.body.texte ?? existante?.texte ?? null;

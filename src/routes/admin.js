@@ -5,7 +5,7 @@ import { config } from '../config.js';
 import { getParam, setParam, jourEffectif } from '../params.js';
 import {
   listSoumissions, countSoumissions, getSoumissionById, validerSoumission, refuserSoumission, supprimerSoumission,
-  listDefisOrdonnes, listDefisFiltres, getDefi, creerDefi, majDefi, supprimerDefi,
+  listDefisOrdonnes, listDefisFiltres, prochainOrdre, getDefi, creerDefi, majDefi, supprimerDefi,
   listBinomes, getBinomeById, creerBinome, majBinome, supprimerBinome, genererCodeUnique,
   classement,
 } from '../repo.js';
@@ -114,13 +114,13 @@ function defiDepuisBody(body) {
     description: String(body.description || ''),
     emoji: body.emoji ? String(body.emoji).trim() : null,
     bonus: body.bonus ? 1 : 0,
+    media: body.media === 'video' ? 'video' : 'photo',
     type: ['photo', 'texte', 'mixte'].includes(body.type) ? body.type : 'photo',
     disponibilite: ['weekend', 'J1', 'J2'].includes(body.disponibilite) ? body.disponibilite : 'weekend',
     mode_validation: ['manuel', 'auto', 'ia'].includes(body.mode_validation) ? body.mode_validation : 'manuel',
     critere_ia: body.critere_ia ? String(body.critere_ia) : null,
     reponse_attendue: body.reponse_attendue ? String(body.reponse_attendue) : null,
     points_max: Math.max(0, Number(body.points_max) || 0),
-    ordre: Number(body.ordre) || 0,
   };
 }
 
@@ -137,8 +137,8 @@ admin.get('/admin/defis/:id', requireAdmin, (req, res) => {
   if (!defi) return res.redirect('/admin/defis');
   res.render('admin/defi-form', { defi });
 });
-admin.post('/admin/defis', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); if (d.titre) creerDefi(d); res.redirect('/admin/defis'); });
-admin.post('/admin/defis/:id', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); if (d.titre) majDefi(Number(req.params.id), d); res.redirect('/admin/defis'); });
+admin.post('/admin/defis', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); if (d.titre) creerDefi({ ...d, ordre: prochainOrdre() }); res.redirect('/admin/defis'); });
+admin.post('/admin/defis/:id', requireAdmin, (req, res) => { const d = defiDepuisBody(req.body); const actuel = getDefi(Number(req.params.id)); if (d.titre && actuel) majDefi(actuel.id, { ...d, ordre: actuel.ordre }); res.redirect('/admin/defis'); });
 admin.post('/admin/defis/:id/supprimer', requireAdmin, (req, res) => { supprimerDefi(Number(req.params.id)); res.redirect('/admin/defis'); });
 
 // ── CRUD binômes ──

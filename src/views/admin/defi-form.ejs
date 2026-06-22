@@ -17,6 +17,12 @@
         <% ['photo', 'texte', 'mixte'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.type === t ? 'selected' : '' %>><%= t %></option><% }) %>
       </select>
     </label>
+    <label>Média attendu <span class="muted">(défis photo / mixte)</span>
+      <select name="media">
+        <option value="photo" <%= !defi || defi.media !== 'video' ? 'selected' : '' %>>Photo</option>
+        <option value="video" <%= defi && defi.media === 'video' ? 'selected' : '' %>>Vidéo (clip court)</option>
+      </select>
+    </label>
     <label>Disponibilité
       <select name="disponibilite">
         <% ['weekend', 'J1', 'J2'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.disponibilite === t ? 'selected' : '' %>><%= t %></option><% }) %>
@@ -41,9 +47,6 @@
     </label>
     <label>Points max
       <input type="number" name="points_max" min="0" value="<%= defi ? defi.points_max : 10 %>">
-    </label>
-    <label>Ordre d'affichage
-      <input type="number" name="ordre" value="<%= defi ? defi.ordre : 0 %>">
     </label>
     <div class="form-row">
       <button class="btn" type="submit">Enregistrer</button>

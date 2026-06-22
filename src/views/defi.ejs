@@ -32,21 +32,31 @@
       <% } %>
     <% } %>
 
-    <form id="form-defi" class="form" data-defi-id="<%= defi.id %>" data-type="<%= defi.type %>">
+    <form id="form-defi" class="form" data-defi-id="<%= defi.id %>" data-type="<%= defi.type %>" data-media="<%= defi.media || 'photo' %>">
       <% if (defi.type === 'texte' || defi.type === 'mixte') { %>
         <label for="texte">Ta réponse</label>
         <textarea id="texte" name="texte" rows="4" placeholder="Écris ta réponse…"><%= soumission && soumission.texte ? soumission.texte : '' %></textarea>
       <% } %>
 
       <% if (defi.type === 'photo' || defi.type === 'mixte') { %>
-        <label for="photo">Photo</label>
+        <% const attendVideo = defi.media === 'video'; %>
+        <label for="photo"><%= attendVideo ? 'Vidéo' : 'Photo' %></label>
         <% if (soumission && soumission.photo_path) { %>
-          <p class="muted">Photo déjà envoyée :</p>
-          <img class="apercu" src="/uploads/<%= soumission.thumb_path || soumission.photo_path %>" alt="photo précédente">
-          <p class="muted">Choisis une nouvelle photo pour la remplacer.</p>
+          <p class="muted"><%= attendVideo ? 'Vidéo déjà envoyée :' : 'Photo déjà envoyée :' %></p>
+          <% if (attendVideo) { %>
+            <video class="apercu" src="/uploads/<%= soumission.photo_path %>" controls preload="metadata"></video>
+          <% } else { %>
+            <img class="apercu" src="/uploads/<%= soumission.thumb_path || soumission.photo_path %>" alt="photo précédente">
+          <% } %>
+          <p class="muted">Choisis un nouveau fichier pour le remplacer.</p>
         <% } %>
-        <input id="photo" name="photo" type="file" accept="image/*">
-        <img id="apercu-nouveau" class="apercu" hidden alt="aperçu de la nouvelle photo">
+        <input id="photo" name="photo" type="file" accept="<%= attendVideo ? 'video/*' : 'image/*' %>"<%= attendVideo ? ' capture' : '' %>>
+        <% if (attendVideo) { %><p class="muted">Filme court : environ 20 s, 50 Mo max.</p><% } %>
+        <% if (attendVideo) { %>
+          <video id="apercu-nouveau" class="apercu" hidden controls></video>
+        <% } else { %>
+          <img id="apercu-nouveau" class="apercu" hidden alt="aperçu de la nouvelle photo">
+        <% } %>
       <% } %>
 
       <p id="etat-envoi" class="etat" role="status" aria-live="polite"></p>

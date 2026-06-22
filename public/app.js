@@ -51,7 +51,10 @@
     const fd = new FormData();
     fd.append('defi_id', rec.defiId);
     if (rec.texte != null) fd.append('texte', rec.texte);
-    if (rec.blob) fd.append('photo', rec.blob, 'photo.jpg');
+    if (rec.blob) {
+      const estVideo = rec.blob.type && rec.blob.type.startsWith('video/');
+      fd.append('photo', rec.blob, estVideo ? ('video.' + (rec.blob.type.split('/')[1] || 'mp4')) : 'photo.jpg');
+    }
     const r = await fetch('/api/soumissions', { method: 'POST', body: fd });
     if (r.ok) return 'ok';
     if (r.status >= 400 && r.status < 500 && r.status !== 423) return 'abandon';
@@ -107,6 +110,7 @@
   function wireDefi(form) {
     const defiId = Number(form.dataset.defiId);
     const type = form.dataset.type;
+    const media = form.dataset.media;
     const inputPhoto = document.getElementById('photo');
     const apercu = document.getElementById('apercu-nouveau');
     const etat = document.getElementById('etat-envoi');
@@ -136,8 +140,17 @@
         let blob = null;
         const f = inputPhoto?.files?.[0];
         if (f) {
-          etat.textContent = '📸 Compression de la photo…';
-          blob = await compresser(f);
+          if (media === 'video') {
+            if (f.size > 50 * 1024 * 1024) {
+              etat.textContent = '⚠️ Vidéo trop lourde (50 Mo max). Filme plus court.';
+              btn.disabled = false;
+              return;
+            }
+            blob = f; // pas de compression vidéo (on garde le fichier tel quel)
+          } else {
+            etat.textContent = '📸 Compression de la photo…';
+            blob = await compresser(f);
+          }
         }
 
         const aDuTexte = texte != null && texte.trim() !== '';

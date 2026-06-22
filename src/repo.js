@@ -1,10 +1,14 @@
 import { db } from './db.js';
 import { randomInt } from 'node:crypto';
 
+// Ordre d'affichage piloté par la catégorie = le jour (week-end, puis J1, puis J2),
+// puis ordre interne. Plus besoin de gérer un numéro d'ordre global à la main.
+const _ORDRE_JOUR = "CASE disponibilite WHEN 'weekend' THEN 0 WHEN 'J1' THEN 1 WHEN 'J2' THEN 2 ELSE 3 END";
+
 // --- Lectures ---
 const _binomeByCode = db.prepare('SELECT * FROM binomes WHERE code = ?');
 const _binomeById   = db.prepare('SELECT * FROM binomes WHERE id = ?');
-const _defisOrdered  = db.prepare('SELECT * FROM defis ORDER BY ordre, id');
+const _defisOrdered  = db.prepare(`SELECT * FROM defis ORDER BY ${_ORDRE_JOUR}, ordre, id`);
 const _defi          = db.prepare('SELECT * FROM defis WHERE id = ?');
 const _soumission    = db.prepare('SELECT * FROM soumissions WHERE binome_id = ? AND defi_id = ?');
 const _soumissionsBinome = db.prepare('SELECT defi_id, statut, points_attribues FROM soumissions WHERE binome_id = ?');
@@ -20,8 +24,12 @@ export function listDefisFiltres({ disponibilite, type, mode_validation, bonus }
   if (type)          { sql += ' AND type = ?'; p.push(type); }
   if (mode_validation) { sql += ' AND mode_validation = ?'; p.push(mode_validation); }
   if (bonus === '1' || bonus === '0') { sql += ' AND bonus = ?'; p.push(Number(bonus)); }
-  return db.prepare(sql + ' ORDER BY ordre, id').all(...p);
+  return db.prepare(`${sql} ORDER BY ${_ORDRE_JOUR}, ordre, id`).all(...p);
 }
+
+// Prochain numéro d'ordre (pour appendre un nouveau défi à la fin de son jour)
+const _maxOrdre = db.prepare('SELECT COALESCE(MAX(ordre), 0) + 1 AS n FROM defis');
+export const prochainOrdre = () => _maxOrdre.get().n;
 export const getDefi = (id) => _defi.get(id);
 export const getSoumission = (binomeId, defiId) => _soumission.get(binomeId, defiId);
 
@@ -126,9 +134,9 @@ export const refuserSoumission = (id) => _refuser.run(id);
 export const supprimerSoumission = (id) => _supprimerSoumission.run(id);
 
 // ─────────── Admin : CRUD défis ───────────
-const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,bonus,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
-  VALUES (@titre,@description,@emoji,@bonus,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
-const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,bonus=@bonus,type=@type,disponibilite=@disponibilite,
+const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,bonus,media,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
+  VALUES (@titre,@description,@emoji,@bonus,@media,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
+const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,bonus=@bonus,media=@media,type=@type,disponibilite=@disponibilite,
   mode_validation=@mode_validation,critere_ia=@critere_ia,reponse_attendue=@reponse_attendue,points_max=@points_max,ordre=@ordre WHERE id=@id`);
 export const creerDefi = (d) => _creerDefi.run(d).lastInsertRowid;
 export const majDefi = (id, d) => _majDefi.run({ ...d, id });

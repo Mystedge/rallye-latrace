@@ -34,8 +34,8 @@ const findBinome = db.prepare('SELECT id, code FROM binomes WHERE nom = ?');
 const insBinome = db.prepare('INSERT INTO binomes (nom, code) VALUES (?, ?)');
 const findDefi = db.prepare('SELECT id FROM defis WHERE titre = ?');
 const insDefi = db.prepare(`
-  INSERT INTO defis (titre, description, emoji, bonus, type, disponibilite, mode_validation, reponse_attendue, critere_ia, points_max, ordre)
-  VALUES (@titre, @description, @emoji, @bonus, @type, @disponibilite, @mode_validation, @reponse_attendue, @critere_ia, @points_max, @ordre)
+  INSERT INTO defis (titre, description, emoji, bonus, media, type, disponibilite, mode_validation, reponse_attendue, critere_ia, points_max, ordre)
+  VALUES (@titre, @description, @emoji, @bonus, @media, @type, @disponibilite, @mode_validation, @reponse_attendue, @critere_ia, @points_max, @ordre)
 `);
 
 function codeUnique() {
@@ -65,6 +65,7 @@ export function executerSeed() {
           description: d.description || '',
           emoji: d.emoji ?? null,
           bonus: d.bonus ? 1 : 0,
+          media: d.media ?? null,
           type: d.type || 'photo',
           disponibilite: d.disponibilite || 'weekend',
           mode_validation: d.mode_validation || 'manuel',
@@ -90,6 +91,19 @@ export function synchroniserEmojis() {
   db.transaction(() => {
     for (const d of DEFIS) {
       if (d.emoji) n += _backfillEmoji.run({ titre: d.titre, emoji: d.emoji }).changes;
+    }
+  })();
+  return n;
+}
+
+// Backfill du média attendu (photo/vidéo) depuis defis.json — ne touche que les défis
+// dont le média n'a jamais été défini (NULL), pour préserver les choix faits en admin.
+const _backfillMedia = db.prepare('UPDATE defis SET media = @media WHERE titre = @titre AND media IS NULL');
+export function synchroniserMedia() {
+  let n = 0;
+  db.transaction(() => {
+    for (const d of DEFIS) {
+      if (d.media) n += _backfillMedia.run({ titre: d.titre, media: d.media }).changes;
     }
   })();
   return n;

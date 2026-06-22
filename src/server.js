@@ -6,7 +6,7 @@ import { db } from './db.js';
 import { jourEffectif, getParam } from './params.js';
 import { participant } from './routes/participant.js';
 import { admin } from './routes/admin.js';
-import { executerSeed, synchroniserEmojis, migrerBonusDepuisTitre } from './seed.js';
+import { executerSeed, synchroniserEmojis, synchroniserMedia, migrerBonusDepuisTitre } from './seed.js';
 
 // Seed automatique au tout premier démarrage si la base est vide
 // (permet un déploiement via panel, sans aucune commande à taper).
@@ -23,6 +23,10 @@ if (nBonus > 0) console.log(`Défis bonus migrés depuis le titre : ${nBonus}.`)
 // Synchronise les émojis des défis depuis defis.json (idempotent, préserve les éditions admin).
 const nEmojis = synchroniserEmojis();
 if (nEmojis > 0) console.log(`Émojis des défis synchronisés : ${nEmojis} mis à jour.`);
+
+// Synchronise le média attendu (photo/vidéo) depuis defis.json (préserve les choix admin).
+const nMedia = synchroniserMedia();
+if (nMedia > 0) console.log(`Média des défis synchronisé : ${nMedia} mis à jour.`);
 
 const app = express();
 

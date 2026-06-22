@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS defis (
   description      TEXT NOT NULL DEFAULT '',
   emoji            TEXT,
   bonus            INTEGER NOT NULL DEFAULT 0,
+  media            TEXT,
   type             TEXT NOT NULL CHECK (type IN ('photo','texte','mixte')),
   disponibilite    TEXT NOT NULL CHECK (disponibilite IN ('weekend','J1','J2')),
   mode_validation  TEXT NOT NULL DEFAULT 'manuel' CHECK (mode_validation IN ('manuel','auto','ia')),
@@ -69,6 +70,9 @@ if (!colonnesDefis.includes('emoji')) {
 }
 if (!colonnesDefis.includes('bonus')) {
   db.exec("ALTER TABLE defis ADD COLUMN bonus INTEGER NOT NULL DEFAULT 0");
+}
+if (!colonnesDefis.includes('media')) {
+  db.exec("ALTER TABLE defis ADD COLUMN media TEXT");
 }
 
 // Paramètres par défaut (insérés une seule fois)
