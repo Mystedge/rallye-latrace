@@ -163,10 +163,10 @@ h2 { font-family: 'Lexend'; font-size: .8rem; font-weight: 700; color: var(--ver
 
 /* Barre collante sous le header : recherche + onglets (Aujourd'hui / Week-end) */
 .barre-nav {
-  position: sticky; top: 53px; z-index: 4;
+  position: sticky; top: 62px; z-index: 4;   /* sous le header (~64px) ; 2px de recouvrement pour éviter une couture */
   background: var(--bg);
   margin: 0 -16px;
-  padding: 10px 16px 6px;
+  padding: 10px 16px 6px;                      /* ~8px de marge visible au-dessus de la recherche, comme l'écart recherche/onglets */
 }
 .recherche {
   width: 100%; font-family: inherit; font-size: 1.05rem;
