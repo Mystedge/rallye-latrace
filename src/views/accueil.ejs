@@ -43,12 +43,15 @@
       const aWeekend = groupes.weekend.length > 0;
     %>
 
-    <% if (aJour && aWeekend) { %>
-      <div class="onglets-barre">
-        <nav class="onglets" role="tablist">
-          <button class="onglet" type="button" data-cible="jour">Aujourd'hui <span class="onglet-compte"><%= countValide(groupes.jour) %>/<%= groupes.jour.length %></span></button>
-          <button class="onglet" type="button" data-cible="weekend">Week-end <span class="onglet-compte"><%= countValide(groupes.weekend) %>/<%= groupes.weekend.length %></span></button>
-        </nav>
+    <% if (aJour || aWeekend) { %>
+      <div class="barre-nav">
+        <input id="recherche" class="recherche" type="search" inputmode="search" autocomplete="off" placeholder="🔍 Rechercher un défi…" aria-label="Rechercher un défi">
+        <% if (aJour && aWeekend) { %>
+          <nav class="onglets" role="tablist">
+            <button class="onglet" type="button" data-cible="jour">Aujourd'hui <span class="onglet-compte"><%= countValide(groupes.jour) %>/<%= groupes.jour.length %></span></button>
+            <button class="onglet" type="button" data-cible="weekend">Week-end <span class="onglet-compte"><%= countValide(groupes.weekend) %>/<%= groupes.weekend.length %></span></button>
+          </nav>
+        <% } %>
       </div>
     <% } %>
 
@@ -58,7 +61,7 @@
         <ul class="defis">
           <% groupes.jour.forEach((d) => { const m = metaDefi(etat[d.id], d); const bonus = !!d.bonus; %>
             <li>
-              <a class="defi <%= m.cls %> <%= bonus ? 'defi-bonus' : '' %>" href="/defi/<%= d.id %>">
+              <a class="defi <%= m.cls %> <%= bonus ? 'defi-bonus' : '' %>" href="/defi/<%= d.id %>" data-recherche="<%= d.titre %> <%= d.description || '' %>">
                 <span class="defi-emoji"><%= d.emoji || '📍' %></span>
                 <span class="defi-corps">
                   <% if (bonus) { %><span class="tag-bonus">Bonus</span><% } %>
@@ -78,7 +81,7 @@
         <ul class="defis">
           <% groupes.weekend.forEach((d) => { const m = metaDefi(etat[d.id], d); const bonus = !!d.bonus; %>
             <li>
-              <a class="defi <%= m.cls %> <%= bonus ? 'defi-bonus' : '' %>" href="/defi/<%= d.id %>">
+              <a class="defi <%= m.cls %> <%= bonus ? 'defi-bonus' : '' %>" href="/defi/<%= d.id %>" data-recherche="<%= d.titre %> <%= d.description || '' %>">
                 <span class="defi-emoji"><%= d.emoji || '📍' %></span>
                 <span class="defi-corps">
                   <% if (bonus) { %><span class="tag-bonus">Bonus</span><% } %>
@@ -95,6 +98,7 @@
     <% if (!aJour && !aWeekend) { %>
       <p class="vide">Aucun défi disponible pour le moment.</p>
     <% } %>
+    <p id="recherche-vide" class="vide" hidden>Aucun défi ne correspond à ta recherche.</p>
   </main>
 
   <script src="/app.js"></script>

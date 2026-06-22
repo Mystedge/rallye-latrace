@@ -209,20 +209,51 @@
     }
   }
 
-  // ───────────────────────── Onglets accueil (Aujourd'hui / Week-end) ─────────────────────────
-  // Amélioration progressive : sans JS, les deux groupes restent affichés empilés.
-  function wireOnglets() {
-    const nav = document.querySelector('.onglets');
-    if (!nav) return;
-    const boutons = [...nav.querySelectorAll('.onglet')];
+  // ───────────────────────── Accueil : recherche instantanée + onglets ─────────────────────────
+  // Recherche : filtre les défis (jour + week-end d'un coup), insensible aux accents/majuscules.
+  // Onglets : amélioration progressive (sans JS, les deux groupes restent empilés).
+  const normaliser = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+  function wireAccueil() {
     const sections = [...document.querySelectorAll('.groupe')];
-    if (!boutons.length || !sections.length) return;
-    const activer = (cible) => {
-      boutons.forEach((b) => b.classList.toggle('on', b.dataset.cible === cible));
-      sections.forEach((s) => { s.hidden = s.dataset.groupe !== cible; });
-    };
-    boutons.forEach((b) => b.addEventListener('click', () => activer(b.dataset.cible)));
-    activer(boutons[0].dataset.cible); // défaut : 1er onglet (= Aujourd'hui)
+    if (!sections.length) return;
+    const nav = document.querySelector('.onglets');
+    const input = document.getElementById('recherche');
+    const vide = document.getElementById('recherche-vide');
+    const boutons = nav ? [...nav.querySelectorAll('.onglet')] : [];
+
+    const cartes = [];
+    sections.forEach((s) => s.querySelectorAll('.defis > li').forEach((li) => {
+      const a = li.querySelector('.defi');
+      cartes.push({ li, section: s, txt: normaliser(a ? (a.dataset.recherche || a.textContent) : li.textContent) });
+    }));
+    let actif = boutons[0] ? boutons[0].dataset.cible : null;
+
+    function rendre() {
+      const q = input ? normaliser(input.value.trim()) : '';
+      if (q) {
+        if (nav) nav.hidden = true;
+        const compte = new Map(sections.map((s) => [s, 0]));
+        cartes.forEach((c) => { const ok = c.txt.includes(q); c.li.hidden = !ok; if (ok) compte.set(c.section, compte.get(c.section) + 1); });
+        let total = 0;
+        sections.forEach((s) => { const n = compte.get(s); s.hidden = n === 0; total += n; });
+        if (vide) vide.hidden = total > 0;
+      } else {
+        if (nav) nav.hidden = false;
+        if (vide) vide.hidden = true;
+        cartes.forEach((c) => { c.li.hidden = false; });
+        if (boutons.length && actif) {
+          boutons.forEach((b) => b.classList.toggle('on', b.dataset.cible === actif));
+          sections.forEach((s) => { s.hidden = s.dataset.groupe !== actif; });
+        } else {
+          sections.forEach((s) => { s.hidden = false; });
+        }
+      }
+    }
+
+    boutons.forEach((b) => b.addEventListener('click', () => { actif = b.dataset.cible; rendre(); }));
+    if (input) input.addEventListener('input', rendre);
+    rendre(); // défaut : 1er onglet actif (= Aujourd'hui), pas de filtre
   }
 
   // ───────────────────────── Démarrage ─────────────────────────
