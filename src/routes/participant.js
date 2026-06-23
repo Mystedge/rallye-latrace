@@ -6,7 +6,7 @@ import { config } from '../config.js';
 import { getParam, jourEffectif, defiVisible } from '../params.js';
 import {
   getBinomeByCode, getBinomeById, listDefisOrdonnes, getDefi,
-  getSoumission, mapSoumissions, upsertSoumission,
+  getSoumission, mapSoumissions, upsertSoumission, classement,
 } from '../repo.js';
 import { traiterPhoto, stockerVideo } from '../images.js';
 import { enqueue } from '../prequalif.js';
@@ -61,7 +61,13 @@ participant.get('/accueil', requireBinome, (req, res) => {
     weekend: visibles.filter((d) => d.disponibilite === 'weekend'),
     jour: visibles.filter((d) => d.disponibilite !== 'weekend'),
   };
-  res.render('accueil', { binome, groupes, etat, jour: jourEffectif(), score });
+  res.render('accueil', { binome, groupes, etat, jour: jourEffectif(), score, classementVisible: getParam('classement_visible') === '1' });
+});
+
+// Classement général (visible seulement si l'orga l'a activé dans les réglages)
+participant.get('/classement', requireBinome, (req, res) => {
+  if (getParam('classement_visible') !== '1') return res.redirect('/accueil');
+  res.render('classement', { lignes: classement(), binomeId: req.session.binomeId });
 });
 
 // Formulaire d'un défi (pré-rempli si déjà soumis)

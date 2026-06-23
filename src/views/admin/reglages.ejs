@@ -15,6 +15,9 @@
     <label class="switch"><input type="checkbox" name="j2_ouvert" value="1" <%= j2_ouvert === '1' ? 'checked' : '' %>> Défis <strong>J2</strong> (dimanche) ouverts</label>
     <p class="muted">Rend accessibles les défis du dimanche. <strong>À cocher le dimanche matin.</strong> Tant que c'est décoché, les défis J2 restent masqués pour les participants, même si le jour courant est J2.</p>
 
+    <label class="switch"><input type="checkbox" name="classement_visible" value="1" <%= classement_visible === '1' ? 'checked' : '' %>> <strong>Classement général</strong> visible par les participants</label>
+    <p class="muted">Activé : les participants peuvent voir le classement de tous les binômes (en touchant leur score 🏆 en haut de l'accueil). Décoché : chacun ne voit que ses propres points.</p>
+
     <label class="switch"><input type="checkbox" name="ia_activee" value="1" <%= ia_activee === '1' ? 'checked' : '' %>> Pré-qualification <strong>IA</strong> activée
       <% if (!cle_ia) { %><span class="erreur">— ⚠️ clé API non configurée (.env)</span><% } %>
     </label>

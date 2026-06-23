@@ -15,7 +15,11 @@
   <header class="barre">
     <strong class="barre-titre"><img class="barre-logo" src="/logo-latrace.svg" alt="La Trace"> <span class="barre-nom"><%= binome.nom %></span></strong>
     <div class="barre-actions">
-      <span class="score-pill" title="Total de tes points validés">🏆 <%= score %> pts</span>
+      <% if (classementVisible) { %>
+        <a class="score-pill" href="/classement" title="Voir le classement">🏆 <%= score %> pts ›</a>
+      <% } else { %>
+        <span class="score-pill" title="Total de tes points validés">🏆 <%= score %> pts</span>
+      <% } %>
       <form method="post" action="/api/logout">
         <button class="btn-deco" type="submit" aria-label="Se déconnecter" title="Se déconnecter">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

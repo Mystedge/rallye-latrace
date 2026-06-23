@@ -243,6 +243,7 @@ admin.get('/admin/reglages', requireAdmin, (req, res) => res.render('admin/regla
   j2_ouvert: getParam('j2_ouvert'),
   ia_activee: getParam('ia_activee'),
   verrou_final: getParam('verrou_final'),
+  classement_visible: getParam('classement_visible'),
   jour_effectif: jourEffectif(),
   cle_ia: Boolean(config.anthropicApiKey),
 }));
@@ -253,5 +254,6 @@ admin.post('/admin/reglages', requireAdmin, (req, res) => {
   setParam('j2_ouvert', req.body.j2_ouvert ? '1' : '0');
   setParam('ia_activee', req.body.ia_activee ? '1' : '0');
   setParam('verrou_final', req.body.verrou_final ? '1' : '0');
+  setParam('classement_visible', req.body.classement_visible ? '1' : '0');
   res.redirect('/admin/reglages');
 });

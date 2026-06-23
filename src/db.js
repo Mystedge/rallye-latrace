@@ -89,6 +89,7 @@ const PARAM_DEFAUTS = {
   j2_ouvert: '0',        // 0 | 1 — ouvert le dimanche matin par l'admin
   ia_activee: '1',       // 0 | 1 — interrupteur global de la pré-qualification IA
   verrou_final: '0',     // 0 | 1 — lecture seule après dépouillement
+  classement_visible: '0', // 0 | 1 — classement général visible par les participants
 };
 const insParam = db.prepare('INSERT OR IGNORE INTO parametres (cle, valeur) VALUES (?, ?)');
 for (const [cle, valeur] of Object.entries(PARAM_DEFAUTS)) insParam.run(cle, valeur);
