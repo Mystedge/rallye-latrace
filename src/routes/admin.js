@@ -121,11 +121,13 @@ admin.post('/admin/api/valider-lot', requireAdmin, (req, res) => {
 // ── CRUD défis ──
 // « Type de réponse » (un seul menu admin) -> structure (type) + média attendu (media).
 const TYPE_REPONSE = {
-  photo:       { type: 'photo', media: 'photo' },
-  video:       { type: 'photo', media: 'video' },
-  texte:       { type: 'texte', media: 'photo' },
-  photo_texte: { type: 'mixte', media: 'photo' },
-  video_texte: { type: 'mixte', media: 'video' },
+  photo:             { type: 'photo', media: 'photo' },
+  video:             { type: 'photo', media: 'video' },
+  photo_video:       { type: 'photo', media: 'photo_video' },
+  texte:             { type: 'texte', media: 'photo' },
+  photo_texte:       { type: 'mixte', media: 'photo' },
+  video_texte:       { type: 'mixte', media: 'video' },
+  photo_video_texte: { type: 'mixte', media: 'photo_video' },
 };
 function defiDepuisBody(body) {
   const tr = TYPE_REPONSE[body.type_reponse] || TYPE_REPONSE.photo;

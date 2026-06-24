@@ -112,19 +112,19 @@
     const type = form.dataset.type;
     const media = form.dataset.media;
     const inputPhoto = document.getElementById('photo');
-    const apercu = document.getElementById('apercu-nouveau');
+    const apercu = document.getElementById('apercu-conteneur');
     const etat = document.getElementById('etat-envoi');
     const btn = document.getElementById('btn-envoyer');
 
     if (inputPhoto && apercu) {
       inputPhoto.addEventListener('change', () => {
-        const f = inputPhoto.files[0];
-        if (f) {
-          apercu.src = URL.createObjectURL(f);
-          apercu.hidden = false;
-        } else {
-          apercu.hidden = true;
-          apercu.removeAttribute('src'); // pas d'aperçu cassé tant qu'aucune photo n'est choisie
+        apercu.textContent = ''; // efface les aperçus précédents (rien tant qu'aucun fichier choisi)
+        for (const f of inputPhoto.files) {
+          const el = f.type.startsWith('video/') ? document.createElement('video') : document.createElement('img');
+          el.className = 'apercu';
+          if (el.tagName === 'VIDEO') el.controls = true;
+          el.src = URL.createObjectURL(f);
+          apercu.appendChild(el);
         }
       });
     }
@@ -140,7 +140,7 @@
         let blob = null;
         const f = inputPhoto?.files?.[0];
         if (f) {
-          if (media === 'video') {
+          if (f.type.startsWith('video/')) { // détection par type de fichier (gère photo, vidéo, ou « photo ou vidéo »)
             if (f.size > 150 * 1024 * 1024) {
               etat.textContent = '⚠️ Vidéo trop lourde (150 Mo max, ≈ 1 min). Filme plus court, ou envoie-la par WhatsApp ci-dessous.';
               btn.disabled = false;

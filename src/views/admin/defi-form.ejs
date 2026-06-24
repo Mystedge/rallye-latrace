@@ -26,10 +26,10 @@
       let typeReponse = 'photo';
       if (defi) {
         if (defi.type === 'texte') typeReponse = 'texte';
-        else if (defi.type === 'mixte') typeReponse = (defi.media === 'video') ? 'video_texte' : 'photo_texte';
-        else typeReponse = (defi.media === 'video') ? 'video' : 'photo';
+        else if (defi.type === 'mixte') typeReponse = defi.media === 'video' ? 'video_texte' : (defi.media === 'photo_video' ? 'photo_video_texte' : 'photo_texte');
+        else typeReponse = defi.media === 'video' ? 'video' : (defi.media === 'photo_video' ? 'photo_video' : 'photo');
       }
-      const optionsTR = [['photo', 'Photo'], ['video', 'Vidéo (clip court)'], ['texte', 'Texte'], ['photo_texte', 'Photo + texte'], ['video_texte', 'Vidéo + texte']];
+      const optionsTR = [['photo', 'Photo'], ['video', 'Vidéo (clip court)'], ['photo_video', 'Photo ou vidéo'], ['texte', 'Texte'], ['photo_texte', 'Photo + texte'], ['video_texte', 'Vidéo + texte'], ['photo_video_texte', 'Photo ou vidéo + texte']];
     %>
     <label>Type de réponse <span class="muted">(ce que le binôme envoie)</span>
       <select name="type_reponse">
