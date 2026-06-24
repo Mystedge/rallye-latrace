@@ -11,12 +11,12 @@ import {
 import { traiterPhoto, stockerVideo } from '../images.js';
 import { enqueue } from '../prequalif.js';
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 160 * 1024 * 1024 } });
-// Enveloppe multer : transforme une erreur (fichier trop volumineux) en 413 propre
-// pour que le client abandonne l'envoi au lieu de boucler.
-function uploadPhoto(req, res, next) {
-  upload.single('photo')(req, res, (err) => {
-    if (err) return res.status(err.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ ok: false, erreur: 'Fichier trop volumineux.' });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 160 * 1024 * 1024, files: 10 } });
+// Enveloppe multer : jusqu'à 10 fichiers (défis multi-photos). Erreur (trop gros / trop
+// nombreux) -> 413/400 propre pour que le client abandonne au lieu de boucler.
+function uploadPhotos(req, res, next) {
+  upload.array('photo', 10)(req, res, (err) => {
+    if (err) return res.status(err.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ ok: false, erreur: 'Fichier trop volumineux ou trop nombreux.' });
     next();
   });
 }
@@ -81,8 +81,8 @@ participant.get('/defi/:id', requireBinome, (req, res) => {
   res.render('defi', { defi, soumission });
 });
 
-// Soumission (multipart) : upsert idempotent, réponse immédiate, pré-qualif déclenchée ensuite
-participant.post('/api/soumissions', requireBinome, uploadPhoto, async (req, res) => {
+// Soumission (multipart, 1..N fichiers) : upsert idempotent, réponse immédiate, pré-qualif ensuite
+participant.post('/api/soumissions', requireBinome, uploadPhotos, async (req, res) => {
   try {
     if (getParam('verrou_final') === '1') {
       return res.status(423).json({ ok: false, erreur: 'Le rallye est verrouillé.' });
@@ -94,18 +94,25 @@ participant.post('/api/soumissions', requireBinome, uploadPhoto, async (req, res
     }
 
     const existante = getSoumission(req.session.binomeId, defiId);
-    const anciennePhoto = existante?.photo_path ?? null;
-    const ancienneThumb = existante?.thumb_path ?? null;
-    let photo_path = anciennePhoto;
-    let thumb_path = ancienneThumb;
+    let photo_path = existante?.photo_path ?? null;
+    let thumb_path = existante?.thumb_path ?? null;
+    let photos = existante?.photos ?? null;
     let remplacee = false;
-    if (req.file?.buffer?.length) {
-      if ((req.file.mimetype || '').startsWith('video/')) {
-        photo_path = await stockerVideo(req.file.buffer, req.file.mimetype, req.file.originalname);
-        thumb_path = null;
-      } else {
-        ({ photo_path, thumb_path } = await traiterPhoto(req.file.buffer));
+
+    const fichiers = (req.files || []).filter((f) => f.buffer?.length);
+    if (fichiers.length) {
+      const medias = [];
+      for (const f of fichiers) {
+        if ((f.mimetype || '').startsWith('video/')) {
+          medias.push({ p: await stockerVideo(f.buffer, f.mimetype, f.originalname), t: null });
+        } else {
+          const r = await traiterPhoto(f.buffer);
+          medias.push({ p: r.photo_path, t: r.thumb_path });
+        }
       }
+      photo_path = medias[0].p;          // 1er média = compat (classement, IA, affichage simple)
+      thumb_path = medias[0].t;
+      photos = medias.length > 1 ? JSON.stringify(medias) : null;
       remplacee = true;
     }
     const texte = req.body.texte ?? existante?.texte ?? null;
@@ -114,13 +121,16 @@ participant.post('/api/soumissions', requireBinome, uploadPhoto, async (req, res
       return res.status(400).json({ ok: false, erreur: 'Réponse vide.' });
     }
 
-    const id = upsertSoumission({ binomeId: req.session.binomeId, defiId, texte, photo_path, thumb_path });
+    const id = upsertSoumission({ binomeId: req.session.binomeId, defiId, texte, photo_path, thumb_path, photos });
     res.json({ ok: true, id });
 
-    // Nettoyage : supprimer l'ancienne photo remplacée (best-effort, après réponse)
-    if (remplacee && anciennePhoto && anciennePhoto !== photo_path) {
-      for (const f of [anciennePhoto, ancienneThumb]) {
-        if (f) unlink(join(config.uploadsDir, f)).catch(() => {});
+    // Nettoyage : supprimer les anciens fichiers remplacés (best-effort, après réponse)
+    if (remplacee) {
+      const anciens = [existante?.photo_path, existante?.thumb_path];
+      if (existante?.photos) { try { for (const m of JSON.parse(existante.photos)) anciens.push(m.p, m.t); } catch { /* ignore */ } }
+      const nouveaux = new Set([photo_path, thumb_path, ...(photos ? JSON.parse(photos).flatMap((m) => [m.p, m.t]) : [])]);
+      for (const f of anciens) {
+        if (f && !nouveaux.has(f)) unlink(join(config.uploadsDir, f)).catch(() => {});
       }
     }
 

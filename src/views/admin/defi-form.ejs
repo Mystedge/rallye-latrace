@@ -41,6 +41,7 @@
         <% ['weekend', 'J1', 'J2'].forEach((t) => { %><option value="<%= t %>" <%= defi && defi.disponibilite === t ? 'selected' : '' %>><%= t %></option><% }) %>
       </select>
     </label>
+    <label class="switch"><input type="checkbox" name="multi_photos" value="1" <%= defi && defi.multi_photos ? 'checked' : '' %>> <strong>Plusieurs photos</strong> <span class="muted">(le participant peut en envoyer jusqu'à 10 — ex. « 5 églises »)</span></label>
     <label class="switch"><input type="checkbox" name="bonus" value="1" <%= defi && defi.bonus ? 'checked' : '' %>> Défi <strong>bonus</strong> <span class="muted">(affiché en doré, secondaire)</span></label>
     <label class="switch"><input type="checkbox" name="live" value="1" <%= defi && defi.live ? 'checked' : '' %>> <strong>Épreuve en direct</strong> <span class="muted">(non soumettable par les participants ; points attribués à la main)</span></label>
     <% if (defi && defi.live) { %>

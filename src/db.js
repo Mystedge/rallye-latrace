@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS defis (
   media            TEXT,
   live             INTEGER NOT NULL DEFAULT 0,
   image_consigne   TEXT,
+  multi_photos     INTEGER NOT NULL DEFAULT 0,
   type             TEXT NOT NULL CHECK (type IN ('photo','texte','mixte')),
   disponibilite    TEXT NOT NULL CHECK (disponibilite IN ('weekend','J1','J2')),
   mode_validation  TEXT NOT NULL DEFAULT 'manuel' CHECK (mode_validation IN ('manuel','auto','ia')),
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS soumissions (
   texte            TEXT,
   photo_path       TEXT,
   thumb_path       TEXT,
+  photos           TEXT,
   statut           TEXT NOT NULL DEFAULT 'soumis' CHECK (statut IN ('soumis','valide','refuse')),
   points_attribues INTEGER,
   validation_auto  INTEGER NOT NULL DEFAULT 0,
@@ -81,6 +83,13 @@ if (!colonnesDefis.includes('live')) {
 }
 if (!colonnesDefis.includes('image_consigne')) {
   db.exec("ALTER TABLE defis ADD COLUMN image_consigne TEXT");
+}
+if (!colonnesDefis.includes('multi_photos')) {
+  db.exec("ALTER TABLE defis ADD COLUMN multi_photos INTEGER NOT NULL DEFAULT 0");
+}
+const colonnesSoum = db.prepare('PRAGMA table_info(soumissions)').all().map((c) => c.name);
+if (!colonnesSoum.includes('photos')) {
+  db.exec("ALTER TABLE soumissions ADD COLUMN photos TEXT");
 }
 
 // Paramètres par défaut (insérés une seule fois)

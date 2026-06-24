@@ -233,6 +233,8 @@ textarea { resize: vertical; }
 .consigne { color: var(--texte-doux); margin: 0 4px 14px; }
 .consigne-img { max-width: 100%; border-radius: var(--rayon-sm); border: 1px solid var(--bord); margin: 0 0 14px; display: block; }
 .apercu { max-width: 100%; border-radius: var(--rayon-sm); border: 1px solid var(--bord); display: block; }
+.apercus { display: flex; flex-wrap: wrap; gap: 8px; }
+.apercus .apercu { flex: 1 1 140px; max-width: 100%; max-height: 220px; object-fit: cover; }
 
 .btn {
   font-family: inherit;

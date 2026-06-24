@@ -44,23 +44,32 @@
 
       <% if (defi.type === 'photo' || defi.type === 'mixte') {
            const m = defi.media || 'photo';
+           const multi = !!defi.multi_photos;
            const acceptVal = m === 'video' ? 'video/*' : (m === 'photo_video' ? 'image/*,video/*' : 'image/*');
-           const labelMedia = m === 'video' ? 'Vidéo' : (m === 'photo_video' ? 'Photo ou vidéo' : 'Photo');
-           const dejaVideo = soumission && soumission.photo_path && /\.(mp4|mov|webm|m4v|3gp)$/i.test(soumission.photo_path);
+           const labelMedia = (m === 'video' ? 'Vidéo' : (m === 'photo_video' ? 'Photo ou vidéo' : 'Photo')) + (multi ? 's' : '');
+           const estVid = (p) => /\.(mp4|mov|webm|m4v|3gp)$/i.test(p || '');
+           let dejaMedias = [];
+           if (soumission && soumission.photos) { try { dejaMedias = JSON.parse(soumission.photos); } catch (e) { dejaMedias = []; } }
+           else if (soumission && soumission.photo_path) { dejaMedias = [{ p: soumission.photo_path, t: soumission.thumb_path }]; }
       %>
         <label for="photo"><%= labelMedia %></label>
-        <% if (soumission && soumission.photo_path) { %>
-          <p class="muted"><%= dejaVideo ? 'Vidéo déjà envoyée :' : 'Photo déjà envoyée :' %></p>
-          <% if (dejaVideo) { %>
-            <video class="apercu" src="/uploads/<%= soumission.photo_path %>" controls preload="metadata"></video>
-          <% } else { %>
-            <img class="apercu" src="/uploads/<%= soumission.thumb_path || soumission.photo_path %>" alt="fichier précédent">
-          <% } %>
-          <p class="muted">Choisis un nouveau fichier pour le remplacer.</p>
+        <% if (dejaMedias.length) { %>
+          <p class="muted"><%= dejaMedias.length > 1 ? dejaMedias.length + ' fichiers déjà envoyés :' : 'Déjà envoyé :' %></p>
+          <div class="apercus">
+            <% dejaMedias.forEach((md) => { %>
+              <% if (estVid(md.p)) { %>
+                <video class="apercu" src="/uploads/<%= md.p %>" controls preload="metadata"></video>
+              <% } else { %>
+                <img class="apercu" src="/uploads/<%= md.t || md.p %>" alt="fichier précédent">
+              <% } %>
+            <% }) %>
+          </div>
+          <p class="muted">Choisis <%= multi ? 'de nouveaux fichiers' : 'un nouveau fichier' %> pour remplacer.</p>
         <% } %>
-        <input id="photo" name="photo" type="file" accept="<%= acceptVal %>">
+        <input id="photo" name="photo" type="file" accept="<%= acceptVal %>"<%= multi ? ' multiple' : '' %>>
+        <% if (multi) { %><p class="muted">Tu peux sélectionner plusieurs photos d'un coup (jusqu'à 10).</p><% } %>
         <% if (m !== 'photo') { %><p class="muted">Vidéo : environ 1 min, 150 Mo max.</p><% } %>
-        <div id="apercu-conteneur"></div>
+        <div id="apercu-conteneur" class="apercus"></div>
       <% } %>
 
       <p id="etat-envoi" class="etat" role="status" aria-live="polite"></p>

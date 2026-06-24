@@ -42,12 +42,13 @@ export function mapSoumissions(binomeId) {
 
 // --- Écriture : upsert idempotent (1 ligne par binôme×défi), réinitialise le cycle de validation ---
 const _upsert = db.prepare(`
-  INSERT INTO soumissions (binome_id, defi_id, texte, photo_path, thumb_path, statut, ia_verdict, submitted_at, updated_at)
-  VALUES (@binomeId, @defiId, @texte, @photo_path, @thumb_path, 'soumis', 'non_evalue', datetime('now'), datetime('now'))
+  INSERT INTO soumissions (binome_id, defi_id, texte, photo_path, thumb_path, photos, statut, ia_verdict, submitted_at, updated_at)
+  VALUES (@binomeId, @defiId, @texte, @photo_path, @thumb_path, @photos, 'soumis', 'non_evalue', datetime('now'), datetime('now'))
   ON CONFLICT(binome_id, defi_id) DO UPDATE SET
     texte            = excluded.texte,
     photo_path       = excluded.photo_path,
     thumb_path       = excluded.thumb_path,
+    photos           = excluded.photos,
     statut           = 'soumis',
     points_attribues = NULL,
     validation_auto  = 0,
@@ -59,8 +60,8 @@ const _upsert = db.prepare(`
     updated_at       = datetime('now')
 `);
 
-export function upsertSoumission({ binomeId, defiId, texte, photo_path, thumb_path }) {
-  _upsert.run({ binomeId, defiId, texte: texte ?? null, photo_path: photo_path ?? null, thumb_path: thumb_path ?? null });
+export function upsertSoumission({ binomeId, defiId, texte, photo_path, thumb_path, photos }) {
+  _upsert.run({ binomeId, defiId, texte: texte ?? null, photo_path: photo_path ?? null, thumb_path: thumb_path ?? null, photos: photos ?? null });
   return _soumission.get(binomeId, defiId).id;
 }
 
@@ -153,9 +154,9 @@ export function pointsParBinome(defiId) {
 }
 
 // ─────────── Admin : CRUD défis ───────────
-const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,bonus,media,live,image_consigne,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
-  VALUES (@titre,@description,@emoji,@bonus,@media,@live,@image_consigne,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
-const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,bonus=@bonus,media=@media,live=@live,image_consigne=@image_consigne,type=@type,disponibilite=@disponibilite,
+const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,bonus,media,live,image_consigne,multi_photos,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
+  VALUES (@titre,@description,@emoji,@bonus,@media,@live,@image_consigne,@multi_photos,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
+const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,bonus=@bonus,media=@media,live=@live,image_consigne=@image_consigne,multi_photos=@multi_photos,type=@type,disponibilite=@disponibilite,
   mode_validation=@mode_validation,critere_ia=@critere_ia,reponse_attendue=@reponse_attendue,points_max=@points_max,ordre=@ordre WHERE id=@id`);
 export const creerDefi = (d) => _creerDefi.run(d).lastInsertRowid;
 export const majDefi = (id, d) => _majDefi.run({ ...d, id });

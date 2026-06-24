@@ -138,6 +138,7 @@ function defiDepuisBody(body) {
     bonus: body.bonus ? 1 : 0,
     media: tr.media,
     live: body.live ? 1 : 0,
+    multi_photos: body.multi_photos ? 1 : 0,
     type: tr.type,
     disponibilite: ['weekend', 'J1', 'J2'].includes(body.disponibilite) ? body.disponibilite : 'weekend',
     mode_validation: ['manuel', 'auto', 'ia'].includes(body.mode_validation) ? body.mode_validation : 'manuel',

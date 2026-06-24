@@ -51,10 +51,11 @@
     const fd = new FormData();
     fd.append('defi_id', rec.defiId);
     if (rec.texte != null) fd.append('texte', rec.texte);
-    if (rec.blob) {
-      const estVideo = rec.blob.type && rec.blob.type.startsWith('video/');
-      fd.append('photo', rec.blob, estVideo ? ('video.' + (rec.blob.type.split('/')[1] || 'mp4')) : 'photo.jpg');
-    }
+    const blobs = rec.blobs || (rec.blob ? [rec.blob] : []); // compat anciens enregistrements (blob unique)
+    blobs.forEach((b, i) => {
+      const estVideo = b.type && b.type.startsWith('video/');
+      fd.append('photo', b, estVideo ? ('video' + i + '.' + (b.type.split('/')[1] || 'mp4')) : ('photo' + i + '.jpg'));
+    });
     const r = await fetch('/api/soumissions', { method: 'POST', body: fd });
     if (r.ok) return 'ok';
     if (r.status >= 400 && r.status < 500 && r.status !== 423) return 'abandon';
@@ -137,31 +138,31 @@
           ? (document.getElementById('texte')?.value ?? '')
           : null;
 
-        let blob = null;
-        const f = inputPhoto?.files?.[0];
-        if (f) {
+        const blobs = [];
+        const fichiers = inputPhoto?.files ? [...inputPhoto.files] : [];
+        for (const f of fichiers) {
           if (f.type.startsWith('video/')) { // détection par type de fichier (gère photo, vidéo, ou « photo ou vidéo »)
             if (f.size > 150 * 1024 * 1024) {
               etat.textContent = '⚠️ Vidéo trop lourde (150 Mo max, ≈ 1 min). Filme plus court, ou envoie-la par WhatsApp ci-dessous.';
               btn.disabled = false;
               return;
             }
-            blob = f; // pas de compression vidéo (on garde le fichier tel quel)
+            blobs.push(f); // pas de compression vidéo (on garde le fichier tel quel)
           } else {
-            etat.textContent = '📸 Compression de la photo…';
-            blob = await compresser(f);
+            etat.textContent = fichiers.length > 1 ? '📸 Compression des photos…' : '📸 Compression de la photo…';
+            blobs.push(await compresser(f));
           }
         }
 
         const aDuTexte = texte != null && texte.trim() !== '';
-        if (!aDuTexte && !blob) {
+        if (!aDuTexte && !blobs.length) {
           etat.textContent = '⚠️ Ajoute une réponse ou une photo.';
           btn.disabled = false;
           return;
         }
 
         // 1) Sécuriser localement AVANT tout envoi — c'est la garantie « zéro perte »
-        const rec = { defiId, texte: aDuTexte ? texte : null, blob, ts: Date.now() };
+        const rec = { defiId, texte: aDuTexte ? texte : null, blobs, ts: Date.now() };
         await idbPut(rec);
 
         etat.textContent = '⬆️ Envoi…';
@@ -194,7 +195,7 @@
     if (btnWa) {
       btnWa.addEventListener('click', async () => {
         btnWa.disabled = true;
-        const rec = { defiId, texte: 'Vidéo envoyée à Tristan par WhatsApp 📲', blob: null, ts: Date.now() };
+        const rec = { defiId, texte: 'Vidéo envoyée à Tristan par WhatsApp 📲', blobs: [], ts: Date.now() };
         await idbPut(rec);
         etat.textContent = '⬆️ Envoi du signalement…';
         try {
