@@ -128,6 +128,7 @@ const TYPE_REPONSE = {
   photo_texte:       { type: 'mixte', media: 'photo' },
   video_texte:       { type: 'mixte', media: 'video' },
   photo_video_texte: { type: 'mixte', media: 'photo_video' },
+  choix_binomes:     { type: 'texte', media: 'photo' }, // réponse = choix de binômes (nb via nb_choix_binomes)
 };
 function defiDepuisBody(body) {
   const tr = TYPE_REPONSE[body.type_reponse] || TYPE_REPONSE.photo;
@@ -139,7 +140,7 @@ function defiDepuisBody(body) {
     media: tr.media,
     live: body.live ? 1 : 0,
     multi_photos: body.multi_photos ? 1 : 0,
-    nb_choix_binomes: Math.min(8, Math.max(0, Number(body.nb_choix_binomes) || 0)),
+    nb_choix_binomes: body.type_reponse === 'choix_binomes' ? Math.min(8, Math.max(1, Number(body.nb_choix_binomes) || 3)) : 0,
     type: tr.type,
     disponibilite: ['weekend', 'J1', 'J2'].includes(body.disponibilite) ? body.disponibilite : 'weekend',
     mode_validation: ['manuel', 'auto', 'ia'].includes(body.mode_validation) ? body.mode_validation : 'manuel',
