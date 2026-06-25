@@ -207,6 +207,25 @@ admin.post('/admin/defis/:id/points', requireAdmin, (req, res) => {
   res.redirect(`/admin/defis/${defi.id}/points`);
 });
 
+// ── Dépouillement des votes (défis « choix de binômes ») ──
+admin.get('/admin/defis/:id/votes', requireAdmin, (req, res) => {
+  const defi = getDefi(Number(req.params.id));
+  if (!defi || !defi.nb_choix_binomes) return res.redirect('/admin/defis');
+  const binomes = listBinomes();
+  const compte = new Map(binomes.map((b) => [b.nom, 0])); // tous les binômes, même 0 vote
+  const votants = [];
+  for (const s of listSoumissions({ defi: defi.id })) {
+    if (!s.texte) continue;
+    const choix = s.texte.split(',').map((x) => x.trim()).filter(Boolean);
+    votants.push({ nom: s.binome_nom, choix });
+    for (const c of choix) compte.set(c, (compte.get(c) || 0) + 1);
+  }
+  const classementVotes = [...compte.entries()]
+    .map(([nom, votes]) => ({ nom, votes }))
+    .sort((a, b) => b.votes - a.votes || a.nom.localeCompare(b.nom));
+  res.render('admin/defi-votes', { defi, classementVotes, votants, nbVotants: votants.length });
+});
+
 // ── CRUD binômes ──
 admin.get('/admin/binomes', requireAdmin, (req, res) =>
   res.render('admin/binomes', { binomes: listBinomes(), erreur: req.query.erreur || null }));

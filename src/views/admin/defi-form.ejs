@@ -45,6 +45,9 @@
     <label>Réponse « choix de binômes » <span class="muted">(nombre de menus à choisir ; 0 = désactivé ; remplace photo/texte — ex. « Le conseil » = 3)</span>
       <input type="number" name="nb_choix_binomes" min="0" max="8" value="<%= defi && defi.nb_choix_binomes ? defi.nb_choix_binomes : 0 %>" style="max-width:120px">
     </label>
+    <% if (defi && defi.nb_choix_binomes > 0) { %>
+      <p style="margin:0"><a class="btn-mini" href="/admin/defis/<%= defi.id %>/votes">📊 Voir le classement des votes</a></p>
+    <% } %>
     <label class="switch"><input type="checkbox" name="bonus" value="1" <%= defi && defi.bonus ? 'checked' : '' %>> Défi <strong>bonus</strong> <span class="muted">(affiché en doré, secondaire)</span></label>
     <label class="switch"><input type="checkbox" name="live" value="1" <%= defi && defi.live ? 'checked' : '' %>> <strong>Épreuve en direct</strong> <span class="muted">(non soumettable par les participants ; points attribués à la main)</span></label>
     <% if (defi && defi.live) { %>

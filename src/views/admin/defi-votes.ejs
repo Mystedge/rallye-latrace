@@ -1,0 +1,30 @@
+<%- include('_head', { titre: 'Votes' }) %>
+<%- include('_nav', { actif: 'defis' }) %>
+<main class="page-admin">
+  <h1><% if (defi.emoji) { %><%= defi.emoji %> <% } %><%= defi.titre %> — résultats des votes</h1>
+  <p class="muted"><%= nbVotants %> binôme<%= nbVotants > 1 ? 's' : '' %> ont voté.</p>
+
+  <table class="tbl">
+    <thead><tr><th>#</th><th>Binôme</th><th>Votes reçus</th></tr></thead>
+    <tbody>
+      <% classementVotes.forEach((l, i) => { %>
+        <tr class="<%= l.votes > 0 && i === 0 ? 'row-bonus' : '' %>">
+          <td><%= i + 1 %></td>
+          <td><%= l.nom %></td>
+          <td><strong><%= l.votes %></strong></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <h2 style="margin-top:24px">Détail des votes</h2>
+  <ul class="binomes">
+    <% votants.forEach((v) => { %>
+      <li class="bcard"><span><strong><%= v.nom %></strong></span><span><%= v.choix.join(' · ') %></span></li>
+    <% }) %>
+  </ul>
+  <% if (!votants.length) { %><p class="muted">Aucun vote enregistré pour le moment.</p><% } %>
+
+  <p style="margin-top:18px"><a class="lien" href="/admin/defis/<%= defi.id %>">← Retour au défi</a></p>
+</main>
+<%- include('_foot') %>

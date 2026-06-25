@@ -42,6 +42,7 @@
           <td><%= d.points_max %></td>
           <td class="nowrap">
             <% if (d.live) { %><a class="lien" href="/admin/defis/<%= d.id %>/points">Points</a><% } %>
+            <% if (d.nb_choix_binomes > 0) { %><a class="lien" href="/admin/defis/<%= d.id %>/votes">Votes</a><% } %>
             <a class="lien" href="/admin/defis/<%= d.id %>">Modifier</a>
             <form method="post" action="/admin/defis/<%= d.id %>/supprimer" onsubmit="return confirm('Supprimer ce défi et ses soumissions ?')" style="display:inline">
               <button class="lien danger" type="submit">Suppr.</button>
