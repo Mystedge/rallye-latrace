@@ -6,7 +6,7 @@ import { config } from '../config.js';
 import { getParam, jourEffectif, defiVisible } from '../params.js';
 import {
   getBinomeByCode, getBinomeById, listDefisOrdonnes, getDefi,
-  getSoumission, mapSoumissions, upsertSoumission, classement, listBinomes,
+  getSoumission, mapSoumissions, upsertSoumission, classement, listBinomes, validerSoumission,
 } from '../repo.js';
 import { traiterPhoto, stockerVideo } from '../images.js';
 import { enqueue } from '../prequalif.js';
@@ -126,6 +126,8 @@ participant.post('/api/soumissions', requireBinome, uploadPhotos, async (req, re
     }
 
     const id = upsertSoumission({ binomeId: req.session.binomeId, defiId, texte, photo_path, thumb_path, photos });
+    // « Choix de binômes » = vote : validé directement, sans passer par la revue admin.
+    if (defi.nb_choix_binomes > 0) validerSoumission(id, defi.points_max);
     res.json({ ok: true, id });
 
     // Nettoyage : supprimer les anciens fichiers remplacés (best-effort, après réponse)

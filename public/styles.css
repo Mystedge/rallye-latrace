@@ -230,7 +230,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--v
 textarea { resize: vertical; }
 
 .titre-defi { font-size: 1.6rem; margin: 8px 4px; color: var(--vert); }
-.consigne { color: var(--texte-doux); margin: 0 4px 14px; }
+.consigne { color: var(--texte-doux); margin: 0 4px 14px; white-space: pre-line; }
 .consigne-img { max-width: 100%; border-radius: var(--rayon-sm); border: 1px solid var(--bord); margin: 0 0 14px; display: block; }
 .apercu { max-width: 100%; border-radius: var(--rayon-sm); border: 1px solid var(--bord); display: block; }
 .apercus { display: flex; flex-wrap: wrap; gap: 8px; }
