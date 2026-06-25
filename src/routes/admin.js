@@ -139,6 +139,7 @@ function defiDepuisBody(body) {
     media: tr.media,
     live: body.live ? 1 : 0,
     multi_photos: body.multi_photos ? 1 : 0,
+    nb_choix_binomes: Math.min(8, Math.max(0, Number(body.nb_choix_binomes) || 0)),
     type: tr.type,
     disponibilite: ['weekend', 'J1', 'J2'].includes(body.disponibilite) ? body.disponibilite : 'weekend',
     mode_validation: ['manuel', 'auto', 'ia'].includes(body.mode_validation) ? body.mode_validation : 'manuel',

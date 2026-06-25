@@ -37,6 +37,16 @@
       <p class="statut-bloc sb-soumis">⚡ Épreuve en direct — les points sont attribués par l'organisation, rien à envoyer ici.</p>
     <% } else { %>
     <form id="form-defi" class="form" data-defi-id="<%= defi.id %>" data-type="<%= defi.type %>" data-media="<%= defi.media || 'photo' %>">
+      <% if (defi.nb_choix_binomes > 0) { %>
+        <label>Choisis <%= defi.nb_choix_binomes %> binôme<%= defi.nb_choix_binomes > 1 ? 's' : '' %> différents</label>
+        <% if (soumission && soumission.texte) { %><p class="muted">Ta réponse actuelle : <strong><%= soumission.texte %></strong></p><% } %>
+        <% for (let i = 0; i < defi.nb_choix_binomes; i++) { %>
+          <select class="binome-choix" aria-label="Choix <%= i + 1 %>">
+            <option value="">— binôme <%= i + 1 %> —</option>
+            <% binomesChoix.forEach((b) => { %><option value="<%= b.nom %>"><%= b.nom %></option><% }) %>
+          </select>
+        <% } %>
+      <% } else { %>
       <% if (defi.type === 'texte' || defi.type === 'mixte') { %>
         <label for="texte">Ta réponse</label>
         <textarea id="texte" name="texte" rows="4" placeholder="Écris ta réponse…"><%= soumission && soumission.texte ? soumission.texte : '' %></textarea>
@@ -71,11 +81,12 @@
         <% if (m !== 'photo') { %><p class="muted">Vidéo : environ 1 min, 150 Mo max.</p><% } %>
         <div id="apercu-conteneur" class="apercus"></div>
       <% } %>
+      <% } %>
 
       <p id="etat-envoi" class="etat" role="status" aria-live="polite"></p>
       <button type="submit" class="btn" id="btn-envoyer">Envoyer</button>
 
-      <% if (defi.media === 'video' || defi.media === 'photo_video') { %>
+      <% if (!defi.nb_choix_binomes && (defi.media === 'video' || defi.media === 'photo_video')) { %>
         <div class="whatsapp-bloc">
           <p>Souci pour envoyer la vidéo (réseau, fichier trop lourd) ? Envoie-la à <strong>Tristan&nbsp;— 06&nbsp;50&nbsp;23&nbsp;00&nbsp;26</strong> sur WhatsApp, puis signale-le ici.</p>
           <button type="button" class="btn-whatsapp" id="btn-whatsapp">J'ai envoyé par WhatsApp</button>

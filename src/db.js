@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS defis (
   live             INTEGER NOT NULL DEFAULT 0,
   image_consigne   TEXT,
   multi_photos     INTEGER NOT NULL DEFAULT 0,
+  nb_choix_binomes INTEGER NOT NULL DEFAULT 0,
   type             TEXT NOT NULL CHECK (type IN ('photo','texte','mixte')),
   disponibilite    TEXT NOT NULL CHECK (disponibilite IN ('weekend','J1','J2')),
   mode_validation  TEXT NOT NULL DEFAULT 'manuel' CHECK (mode_validation IN ('manuel','auto','ia')),
@@ -86,6 +87,9 @@ if (!colonnesDefis.includes('image_consigne')) {
 }
 if (!colonnesDefis.includes('multi_photos')) {
   db.exec("ALTER TABLE defis ADD COLUMN multi_photos INTEGER NOT NULL DEFAULT 0");
+}
+if (!colonnesDefis.includes('nb_choix_binomes')) {
+  db.exec("ALTER TABLE defis ADD COLUMN nb_choix_binomes INTEGER NOT NULL DEFAULT 0");
 }
 const colonnesSoum = db.prepare('PRAGMA table_info(soumissions)').all().map((c) => c.name);
 if (!colonnesSoum.includes('photos')) {

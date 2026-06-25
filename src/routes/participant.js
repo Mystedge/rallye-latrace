@@ -6,7 +6,7 @@ import { config } from '../config.js';
 import { getParam, jourEffectif, defiVisible } from '../params.js';
 import {
   getBinomeByCode, getBinomeById, listDefisOrdonnes, getDefi,
-  getSoumission, mapSoumissions, upsertSoumission, classement,
+  getSoumission, mapSoumissions, upsertSoumission, classement, listBinomes,
 } from '../repo.js';
 import { traiterPhoto, stockerVideo } from '../images.js';
 import { enqueue } from '../prequalif.js';
@@ -78,7 +78,11 @@ participant.get('/defi/:id', requireBinome, (req, res) => {
   // Défi live : accessible seulement si l'orga a attribué des points à ce binôme.
   const accessible = defi.live ? !!soumission : defiVisible(defi);
   if (!accessible) return res.redirect('/accueil');
-  res.render('defi', { defi, soumission });
+  // Réponse « choix de binômes » : liste des binômes sans le binôme courant.
+  const binomesChoix = defi.nb_choix_binomes > 0
+    ? listBinomes().filter((b) => b.id !== req.session.binomeId)
+    : [];
+  res.render('defi', { defi, soumission, binomesChoix });
 });
 
 // Soumission (multipart, 1..N fichiers) : upsert idempotent, réponse immédiate, pré-qualif ensuite

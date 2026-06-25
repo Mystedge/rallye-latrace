@@ -134,9 +134,18 @@
       e.preventDefault();
       btn.disabled = true;
       try {
-        const texte = (type === 'texte' || type === 'mixte')
-          ? (document.getElementById('texte')?.value ?? '')
-          : null;
+        const choixSelects = [...form.querySelectorAll('.binome-choix')];
+        let texte;
+        if (choixSelects.length) {
+          const vals = choixSelects.map((s) => s.value);
+          if (vals.some((v) => !v)) { etat.textContent = '⚠️ Choisis un binôme dans chaque menu.'; btn.disabled = false; return; }
+          if (new Set(vals).size !== vals.length) { etat.textContent = '⚠️ Choisis des binômes différents.'; btn.disabled = false; return; }
+          texte = vals.join(', ');
+        } else {
+          texte = (type === 'texte' || type === 'mixte')
+            ? (document.getElementById('texte')?.value ?? '')
+            : null;
+        }
 
         const blobs = [];
         const fichiers = inputPhoto?.files ? [...inputPhoto.files] : [];

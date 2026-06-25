@@ -154,9 +154,9 @@ export function pointsParBinome(defiId) {
 }
 
 // ─────────── Admin : CRUD défis ───────────
-const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,bonus,media,live,image_consigne,multi_photos,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
-  VALUES (@titre,@description,@emoji,@bonus,@media,@live,@image_consigne,@multi_photos,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
-const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,bonus=@bonus,media=@media,live=@live,image_consigne=@image_consigne,multi_photos=@multi_photos,type=@type,disponibilite=@disponibilite,
+const _creerDefi = db.prepare(`INSERT INTO defis (titre,description,emoji,bonus,media,live,image_consigne,multi_photos,nb_choix_binomes,type,disponibilite,mode_validation,critere_ia,reponse_attendue,points_max,ordre)
+  VALUES (@titre,@description,@emoji,@bonus,@media,@live,@image_consigne,@multi_photos,@nb_choix_binomes,@type,@disponibilite,@mode_validation,@critere_ia,@reponse_attendue,@points_max,@ordre)`);
+const _majDefi = db.prepare(`UPDATE defis SET titre=@titre,description=@description,emoji=@emoji,bonus=@bonus,media=@media,live=@live,image_consigne=@image_consigne,multi_photos=@multi_photos,nb_choix_binomes=@nb_choix_binomes,type=@type,disponibilite=@disponibilite,
   mode_validation=@mode_validation,critere_ia=@critere_ia,reponse_attendue=@reponse_attendue,points_max=@points_max,ordre=@ordre WHERE id=@id`);
 export const creerDefi = (d) => _creerDefi.run(d).lastInsertRowid;
 export const majDefi = (id, d) => _majDefi.run({ ...d, id });
