@@ -218,13 +218,19 @@ admin.get('/admin/defis/:id/votes', requireAdmin, (req, res) => {
   for (const s of listSoumissions({ defi: defi.id })) {
     if (!s.texte) continue;
     const choix = s.texte.split(',').map((x) => x.trim()).filter(Boolean);
-    votants.push({ nom: s.binome_nom, choix });
+    votants.push({ binomeId: s.binome_id, nom: s.binome_nom, choix });
     for (const c of choix) compte.set(c, (compte.get(c) || 0) + 1);
   }
   const classementVotes = [...compte.entries()]
     .map(([nom, votes]) => ({ nom, votes }))
     .sort((a, b) => b.votes - a.votes || a.nom.localeCompare(b.nom));
   res.render('admin/defi-votes', { defi, classementVotes, votants, nbVotants: votants.length });
+});
+// Supprimer le vote d'un binôme pour ce défi (efface sa soumission)
+admin.post('/admin/defis/:id/votes/:binomeId/supprimer', requireAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  retirerSoumissionBinome(Number(req.params.binomeId), id);
+  res.redirect('/admin/defis/' + id + '/votes');
 });
 
 // ── CRUD binômes ──

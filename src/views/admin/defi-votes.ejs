@@ -20,7 +20,13 @@
   <h2 style="margin-top:24px">Détail des votes</h2>
   <ul class="binomes">
     <% votants.forEach((v) => { %>
-      <li class="bcard"><span><strong><%= v.nom %></strong></span><span><%= v.choix.join(' · ') %></span></li>
+      <li class="bcard">
+        <span><strong><%= v.nom %></strong></span>
+        <span><%= v.choix.join(' · ') %></span>
+        <form method="post" action="/admin/defis/<%= defi.id %>/votes/<%= v.binomeId %>/supprimer" onsubmit="return confirm('Supprimer le vote de ce binôme ?')" style="margin:0">
+          <button class="lien danger" type="submit">Supprimer</button>
+        </form>
+      </li>
     <% }) %>
   </ul>
   <% if (!votants.length) { %><p class="muted">Aucun vote enregistré pour le moment.</p><% } %>
